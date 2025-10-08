@@ -95,15 +95,16 @@ export class QuickSwitcherModal extends Modal {
 		onChange: (value: string) => void,
 		options: string[]
 	) {
+		let currentIndex = options.indexOf(currentValue);
+
 		const btn = container.createEl('button', {
 			text: `${label}: ${currentValue}`,
 			cls: 'quick-switcher-filter-btn'
 		});
 
 		btn.addEventListener('click', () => {
-			const currentIndex = options.indexOf(currentValue);
-			const nextIndex = (currentIndex + 1) % options.length;
-			const nextValue = options[nextIndex];
+			currentIndex = (currentIndex + 1) % options.length;
+			const nextValue = options[currentIndex];
 			onChange(nextValue);
 			btn.setText(`${label}: ${nextValue}`);
 		});
