@@ -2,12 +2,14 @@ import { Plugin, TFile, Notice } from 'obsidian';
 import { ConvergentSettings, DEFAULT_SETTINGS } from './settings';
 import { ConvergentSettingTab } from './settings-tab';
 import { IssueCommands } from './commands/issue-commands';
+import { SwitcherCommands } from './commands/switcher-commands';
 import { FrontmatterUtils } from './utils/frontmatter';
 
 export default class ConvergentPlugin extends Plugin {
 	settings: ConvergentSettings;
 	frontmatterUtils: FrontmatterUtils;
 	issueCommands: IssueCommands;
+	switcherCommands: SwitcherCommands;
 
 	async onload() {
 		console.log('Loading Convergent plugin');
@@ -20,6 +22,7 @@ export default class ConvergentPlugin extends Plugin {
 
 		// Initialize command handlers
 		this.issueCommands = new IssueCommands(this.app, this, this.frontmatterUtils);
+		this.switcherCommands = new SwitcherCommands(this.app, this);
 
 		// Register commands
 		this.registerCommands();
@@ -52,6 +55,9 @@ export default class ConvergentPlugin extends Plugin {
 	registerCommands() {
 		// Register issue commands (create, update, delete, etc.)
 		this.issueCommands.registerCommands();
+
+		// Register switcher commands (quick switcher)
+		this.switcherCommands.registerCommands();
 
 		// Open Kanban view
 		this.addCommand({
