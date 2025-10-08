@@ -15,11 +15,11 @@ export class IssueCommands {
 	 * Register all issue-related commands
 	 */
 	registerCommands() {
-		// Create issue - Cmd/Ctrl+I
+		// Create issue - Cmd/Ctrl+Shift+I
 		this.plugin.addCommand({
 			id: 'create-issue',
 			name: 'Create issue',
-			hotkeys: [{ modifiers: ['Mod'], key: 'i' }],
+			hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'i' }],
 			callback: () => this.createIssue()
 		});
 	}
