@@ -12,11 +12,11 @@ export class SwitcherCommands {
 	 * Register all switcher-related commands
 	 */
 	registerCommands() {
-		// Quick switcher - Cmd/Ctrl+K
+		// Quick switcher - Cmd/Ctrl+Shift+O
 		this.plugin.addCommand({
 			id: 'quick-switcher',
 			name: 'Quick switcher',
-			hotkeys: [{ modifiers: ['Mod'], key: 'k' }],
+			hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'o' }],
 			callback: () => this.openQuickSwitcher()
 		});
 	}
