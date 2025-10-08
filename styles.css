@@ -1,0 +1,175 @@
+/* Convergent Plugin Styles */
+
+/* Modal styling */
+.convergent-modal-input-wide {
+	width: 100%;
+}
+
+.convergent-modal-textarea {
+	width: 100%;
+	font-family: var(--font-text);
+	resize: vertical;
+}
+
+.convergent-modal-buttons {
+	display: flex;
+	gap: 10px;
+	justify-content: flex-end;
+	margin-top: 20px;
+}
+
+.convergent-modal-buttons button {
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+/* Issue status badges */
+.convergent-status-backlog {
+	background-color: var(--background-modifier-border);
+	color: var(--text-muted);
+}
+
+.convergent-status-todo {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.convergent-status-in-progress {
+	background-color: var(--color-orange);
+	color: white;
+}
+
+.convergent-status-in-review {
+	background-color: var(--color-purple);
+	color: white;
+}
+
+.convergent-status-done {
+	background-color: var(--color-green);
+	color: white;
+}
+
+.convergent-status-canceled {
+	background-color: var(--background-modifier-border);
+	color: var(--text-muted);
+	text-decoration: line-through;
+}
+
+/* Priority badges */
+.convergent-priority-low {
+	color: var(--text-muted);
+}
+
+.convergent-priority-medium {
+	color: var(--color-blue);
+}
+
+.convergent-priority-high {
+	color: var(--color-orange);
+}
+
+.convergent-priority-urgent {
+	color: var(--color-red);
+	font-weight: bold;
+}
+
+/* Kanban board (coming in Week 4) */
+.convergent-kanban {
+	display: flex;
+	gap: 16px;
+	overflow-x: auto;
+	padding: 16px;
+}
+
+.convergent-kanban-column {
+	flex: 0 0 300px;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+	padding: 12px;
+}
+
+.convergent-kanban-column-header {
+	font-weight: 600;
+	margin-bottom: 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.convergent-kanban-card {
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	padding: 12px;
+	margin-bottom: 8px;
+	cursor: pointer;
+	transition: box-shadow 0.2s;
+}
+
+.convergent-kanban-card:hover {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Timeline view (coming in Week 11) */
+.convergent-timeline {
+	padding: 20px;
+}
+
+.convergent-timeline-item {
+	position: relative;
+	padding-left: 30px;
+	padding-bottom: 20px;
+	border-left: 2px solid var(--background-modifier-border);
+}
+
+.convergent-timeline-item::before {
+	content: '';
+	position: absolute;
+	left: -5px;
+	top: 0;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	background-color: var(--interactive-accent);
+}
+
+/* Session tracking */
+.convergent-session-header {
+	background-color: var(--background-secondary);
+	padding: 16px;
+	border-radius: 8px;
+	margin-bottom: 16px;
+}
+
+.convergent-session-timer {
+	font-size: 2em;
+	font-weight: bold;
+	color: var(--interactive-accent);
+}
+
+/* Utility classes */
+.convergent-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 0.85em;
+	font-weight: 500;
+}
+
+.convergent-flex {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.convergent-flex-between {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.convergent-muted {
+	color: var(--text-muted);
+	font-size: 0.9em;
+}

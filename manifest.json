@@ -1,0 +1,11 @@
+{
+  "id": "convergent",
+  "name": "Convergent",
+  "version": "0.1.0",
+  "minAppVersion": "1.10.0",
+  "description": "Context-aware project management for Obsidian. Fast, keyboard-first task management with Kanban boards, timeline views, and session tracking.",
+  "author": "Boris Leshinsky",
+  "authorUrl": "https://github.com/bleshinsky",
+  "fundingUrl": "https://github.com/bleshinsky/Convergent",
+  "isDesktopOnly": false
+}
