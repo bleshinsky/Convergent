@@ -335,6 +335,12 @@
 	padding: 4px 0;
 }
 
+.status-suggestion.status-current {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: none;
+}
+
 .status-icon {
 	font-size: 1.2em;
 	font-weight: bold;

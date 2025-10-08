@@ -12,6 +12,7 @@ export class StatusModal extends SuggestModal<StatusOption> {
 	private file: TFile;
 	private frontmatterUtils: FrontmatterUtils;
 	private onSubmit: (status: IssueStatus) => void;
+	private currentStatus: IssueStatus;
 
 	private statuses: StatusOption[] = [
 		{ status: 'Backlog', label: 'Backlog', icon: '○' },
@@ -26,11 +27,13 @@ export class StatusModal extends SuggestModal<StatusOption> {
 		app: App,
 		file: TFile,
 		frontmatterUtils: FrontmatterUtils,
+		currentStatus: IssueStatus,
 		onSubmit: (status: IssueStatus) => void
 	) {
 		super(app);
 		this.file = file;
 		this.frontmatterUtils = frontmatterUtils;
+		this.currentStatus = currentStatus;
 		this.onSubmit = onSubmit;
 
 		this.setPlaceholder('Select new status...');
@@ -44,13 +47,26 @@ export class StatusModal extends SuggestModal<StatusOption> {
 	}
 
 	renderSuggestion(option: StatusOption, el: HTMLElement) {
+		const isCurrent = option.status === this.currentStatus;
+
 		el.createDiv({ cls: 'status-suggestion' }, (div) => {
+			if (isCurrent) {
+				div.addClass('status-current');
+			}
+
 			div.createSpan({ text: option.icon, cls: 'status-icon' });
-			div.createSpan({ text: option.label, cls: 'status-label' });
+			div.createSpan({
+				text: isCurrent ? `${option.label} (current)` : option.label,
+				cls: 'status-label'
+			});
 		});
 	}
 
 	onChooseSuggestion(option: StatusOption) {
+		// Don't allow selecting the current status
+		if (option.status === this.currentStatus) {
+			return;
+		}
 		this.onSubmit(option.status);
 	}
 }

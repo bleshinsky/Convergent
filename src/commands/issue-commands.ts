@@ -213,12 +213,8 @@ export class IssueCommands {
 			this.app,
 			file,
 			this.frontmatterUtils,
+			currentStatus,
 			async (newStatus: IssueStatus) => {
-				if (newStatus === currentStatus) {
-					new Notice('Status unchanged');
-					return;
-				}
-
 				try {
 					// Update frontmatter
 					await this.frontmatterUtils.updateFrontmatter(file, {
