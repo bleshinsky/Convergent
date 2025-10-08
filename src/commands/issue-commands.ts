@@ -3,6 +3,7 @@ import { Issue, IssueStatus, IssuePriority } from '../types';
 import { IssueModal } from '../modals/issue-modal';
 import { StatusModal } from '../modals/status-modal';
 import { PriorityModal } from '../modals/priority-modal';
+import { PropertiesModal } from '../modals/properties-modal';
 import { FrontmatterUtils } from '../utils/frontmatter';
 import ConvergentPlugin from '../main';
 
@@ -52,6 +53,23 @@ export class IssueCommands {
 				if (activeFile) {
 					if (!checking) {
 						this.changePriority(activeFile);
+					}
+					return true;
+				}
+				return false;
+			}
+		});
+
+		// Edit properties - Cmd/Ctrl+Shift+E
+		this.plugin.addCommand({
+			id: 'edit-properties',
+			name: 'Edit properties',
+			hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'e' }],
+			checkCallback: (checking: boolean) => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (activeFile) {
+					if (!checking) {
+						this.editProperties(activeFile);
 					}
 					return true;
 				}
@@ -284,6 +302,29 @@ export class IssueCommands {
 					new Notice('Failed to change priority');
 				}
 			}
+		).open();
+	}
+
+	/**
+	 * Edit properties of current issue
+	 */
+	async editProperties(file: TFile) {
+		// Check if file is an issue
+		const frontmatter = await this.frontmatterUtils.getFrontmatter(file);
+		if (!frontmatter || frontmatter.type !== 'issue') {
+			new Notice('Current file is not an issue');
+			return;
+		}
+
+		const issue = frontmatter as Issue;
+
+		// Open properties editor
+		new PropertiesModal(
+			this.app,
+			this.plugin,
+			file,
+			issue,
+			this.frontmatterUtils
 		).open();
 	}
 }
