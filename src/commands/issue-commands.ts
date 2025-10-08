@@ -1,6 +1,7 @@
 import { App, Notice, TFile, TFolder } from 'obsidian';
 import { Issue, IssueStatus, IssuePriority } from '../types';
 import { IssueModal } from '../modals/issue-modal';
+import { StatusModal } from '../modals/status-modal';
 import { FrontmatterUtils } from '../utils/frontmatter';
 import ConvergentPlugin from '../main';
 
@@ -21,6 +22,23 @@ export class IssueCommands {
 			name: 'Create issue',
 			hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'i' }],
 			callback: () => this.createIssue()
+		});
+
+		// Change status - Cmd/Ctrl+Shift+S
+		this.plugin.addCommand({
+			id: 'change-status',
+			name: 'Change status',
+			hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 's' }],
+			checkCallback: (checking: boolean) => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (activeFile) {
+					if (!checking) {
+						this.changeStatus(activeFile);
+					}
+					return true;
+				}
+				return false;
+			}
 		});
 	}
 
@@ -174,5 +192,46 @@ export class IssueCommands {
 	 */
 	private generateId(): string {
 		return `ISS-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+	}
+
+	/**
+	 * Change status of current issue
+	 */
+	async changeStatus(file: TFile) {
+		// Check if file is an issue
+		const frontmatter = await this.frontmatterUtils.getFrontmatter(file);
+		if (!frontmatter || frontmatter.type !== 'issue') {
+			new Notice('Current file is not an issue');
+			return;
+		}
+
+		const issue = frontmatter as Issue;
+		const currentStatus = issue.status;
+
+		// Open status picker
+		new StatusModal(
+			this.app,
+			file,
+			this.frontmatterUtils,
+			async (newStatus: IssueStatus) => {
+				if (newStatus === currentStatus) {
+					new Notice('Status unchanged');
+					return;
+				}
+
+				try {
+					// Update frontmatter
+					await this.frontmatterUtils.updateFrontmatter(file, {
+						status: newStatus,
+						modified: new Date().toISOString()
+					});
+
+					new Notice(`Status changed: ${currentStatus} → ${newStatus}`);
+				} catch (error) {
+					console.error('Error changing status:', error);
+					new Notice('Failed to change status');
+				}
+			}
+		).open();
 	}
 }

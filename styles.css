@@ -326,3 +326,22 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+/* Status Modal */
+.status-suggestion {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 4px 0;
+}
+
+.status-icon {
+	font-size: 1.2em;
+	font-weight: bold;
+	width: 24px;
+	text-align: center;
+}
+
+.status-label {
+	font-size: 1em;
+}
