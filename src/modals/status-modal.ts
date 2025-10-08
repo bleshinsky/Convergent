@@ -49,11 +49,11 @@ export class StatusModal extends SuggestModal<StatusOption> {
 	renderSuggestion(option: StatusOption, el: HTMLElement) {
 		const isCurrent = option.status === this.currentStatus;
 
-		el.createDiv({ cls: 'status-suggestion' }, (div) => {
-			if (isCurrent) {
-				div.addClass('status-current');
-			}
+		if (isCurrent) {
+			el.addClass('status-current');
+		}
 
+		el.createDiv({ cls: 'status-suggestion' }, (div) => {
 			div.createSpan({ text: option.icon, cls: 'status-icon' });
 			div.createSpan({
 				text: isCurrent ? `${option.label} (current)` : option.label,

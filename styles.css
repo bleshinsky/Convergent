@@ -335,10 +335,10 @@
 	padding: 4px 0;
 }
 
-.status-suggestion.status-current {
+.suggestion-item.status-current {
 	opacity: 0.5;
-	cursor: not-allowed;
-	pointer-events: none;
+	cursor: not-allowed !important;
+	pointer-events: none !important;
 }
 
 .status-icon {
