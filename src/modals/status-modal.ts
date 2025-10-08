@@ -42,31 +42,19 @@ export class StatusModal extends SuggestModal<StatusOption> {
 	getSuggestions(query: string): StatusOption[] {
 		const lowerQuery = query.toLowerCase();
 		return this.statuses.filter(option =>
+			option.status !== this.currentStatus &&
 			option.label.toLowerCase().includes(lowerQuery)
 		);
 	}
 
 	renderSuggestion(option: StatusOption, el: HTMLElement) {
-		const isCurrent = option.status === this.currentStatus;
-
-		if (isCurrent) {
-			el.addClass('status-current');
-		}
-
 		el.createDiv({ cls: 'status-suggestion' }, (div) => {
 			div.createSpan({ text: option.icon, cls: 'status-icon' });
-			div.createSpan({
-				text: isCurrent ? `${option.label} (current)` : option.label,
-				cls: 'status-label'
-			});
+			div.createSpan({ text: option.label, cls: 'status-label' });
 		});
 	}
 
 	onChooseSuggestion(option: StatusOption) {
-		// Don't allow selecting the current status
-		if (option.status === this.currentStatus) {
-			return;
-		}
 		this.onSubmit(option.status);
 	}
 }
