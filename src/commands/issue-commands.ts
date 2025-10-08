@@ -2,6 +2,7 @@ import { App, Notice, TFile, TFolder } from 'obsidian';
 import { Issue, IssueStatus, IssuePriority } from '../types';
 import { IssueModal } from '../modals/issue-modal';
 import { StatusModal } from '../modals/status-modal';
+import { PriorityModal } from '../modals/priority-modal';
 import { FrontmatterUtils } from '../utils/frontmatter';
 import ConvergentPlugin from '../main';
 
@@ -34,6 +35,23 @@ export class IssueCommands {
 				if (activeFile) {
 					if (!checking) {
 						this.changeStatus(activeFile);
+					}
+					return true;
+				}
+				return false;
+			}
+		});
+
+		// Change priority - Cmd/Ctrl+Shift+P
+		this.plugin.addCommand({
+			id: 'change-priority',
+			name: 'Change priority',
+			hotkeys: [{ modifiers: ['Mod', 'Shift'], key: 'p' }],
+			checkCallback: (checking: boolean) => {
+				const activeFile = this.app.workspace.getActiveFile();
+				if (activeFile) {
+					if (!checking) {
+						this.changePriority(activeFile);
 					}
 					return true;
 				}
@@ -226,6 +244,44 @@ export class IssueCommands {
 				} catch (error) {
 					console.error('Error changing status:', error);
 					new Notice('Failed to change status');
+				}
+			}
+		).open();
+	}
+
+	/**
+	 * Change priority of current issue
+	 */
+	async changePriority(file: TFile) {
+		// Check if file is an issue
+		const frontmatter = await this.frontmatterUtils.getFrontmatter(file);
+		if (!frontmatter || frontmatter.type !== 'issue') {
+			new Notice('Current file is not an issue');
+			return;
+		}
+
+		const issue = frontmatter as Issue;
+		const currentPriority = issue.priority;
+
+		// Open priority picker
+		new PriorityModal(
+			this.app,
+			file,
+			this.frontmatterUtils,
+			currentPriority,
+			async (newPriority: IssuePriority) => {
+				try {
+					// Update frontmatter
+					await this.frontmatterUtils.updateFrontmatter(file, {
+						priority: newPriority,
+						modified: new Date().toISOString()
+					});
+
+					const oldPriority = currentPriority || 'None';
+					new Notice(`Priority changed: ${oldPriority} → ${newPriority}`);
+				} catch (error) {
+					console.error('Error changing priority:', error);
+					new Notice('Failed to change priority');
 				}
 			}
 		).open();

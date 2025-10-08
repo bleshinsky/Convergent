@@ -345,3 +345,22 @@
 .status-label {
 	font-size: 1em;
 }
+
+/* Priority Modal */
+.priority-suggestion {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 4px 0;
+}
+
+.priority-icon {
+	font-size: 1.2em;
+	font-weight: bold;
+	width: 24px;
+	text-align: center;
+}
+
+.priority-label {
+	font-size: 1em;
+}
