@@ -3,6 +3,7 @@ import { ConvergentSettings, DEFAULT_SETTINGS } from './settings';
 import { ConvergentSettingTab } from './settings-tab';
 import { IssueCommands } from './commands/issue-commands';
 import { SwitcherCommands } from './commands/switcher-commands';
+import { BatchCommands } from './commands/batch-commands';
 import { FrontmatterUtils } from './utils/frontmatter';
 
 export default class ConvergentPlugin extends Plugin {
@@ -10,6 +11,7 @@ export default class ConvergentPlugin extends Plugin {
 	frontmatterUtils: FrontmatterUtils;
 	issueCommands: IssueCommands;
 	switcherCommands: SwitcherCommands;
+	batchCommands: BatchCommands;
 
 	async onload() {
 		console.log('Loading Convergent plugin');
@@ -23,6 +25,7 @@ export default class ConvergentPlugin extends Plugin {
 		// Initialize command handlers
 		this.issueCommands = new IssueCommands(this.app, this, this.frontmatterUtils);
 		this.switcherCommands = new SwitcherCommands(this.app, this);
+		this.batchCommands = new BatchCommands(this.app, this);
 
 		// Register commands
 		this.registerCommands();

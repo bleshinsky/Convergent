@@ -372,3 +372,132 @@
 	margin-bottom: 20px;
 	font-style: italic;
 }
+
+/* Multi-Select Mode */
+.multi-select-toggle-btn {
+	margin-left: auto;
+	padding: 6px 12px;
+	font-size: 0.9em;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--interactive-normal);
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.multi-select-toggle-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.multi-select-toggle-btn.active {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+/* Issue Checkboxes */
+.issue-checkbox {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.2em;
+	flex-shrink: 0;
+	cursor: pointer;
+	user-select: none;
+}
+
+.issue-checkbox.checked {
+	color: var(--interactive-accent);
+	font-weight: bold;
+}
+
+.issue-checkbox.unchecked {
+	color: var(--text-muted);
+}
+
+/* Batch Actions Container */
+.quick-switcher-actions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px;
+	border-top: 1px solid var(--background-modifier-border);
+	background: var(--background-secondary);
+	margin-top: 8px;
+}
+
+.selection-count {
+	font-weight: 500;
+	color: var(--text-muted);
+	margin-right: 8px;
+}
+
+/* Batch Action Buttons */
+.batch-action-btn {
+	padding: 6px 12px;
+	font-size: 0.9em;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--interactive-normal);
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.batch-action-btn:hover {
+	background: var(--interactive-hover);
+}
+
+.batch-action-btn.batch-action-primary {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.batch-action-btn.batch-action-primary:hover {
+	background: var(--interactive-accent-hover);
+}
+
+.batch-action-btn.batch-action-danger {
+	background: var(--color-red);
+	color: white;
+	border-color: var(--color-red);
+}
+
+.batch-action-btn.batch-action-danger:hover {
+	background: darkred;
+	border-color: darkred;
+}
+
+/* Confirmation Modal */
+.convergent-confirm-modal h2 {
+	margin-bottom: 16px;
+}
+
+.convergent-confirm-modal p {
+	margin-bottom: 24px;
+	color: var(--text-muted);
+}
+
+.modal-button-container {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
+
+.modal-button-container button {
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.modal-button-container button.mod-warning {
+	background: var(--color-red);
+	color: white;
+	border: none;
+}
+
+.modal-button-container button.mod-warning:hover {
+	background: darkred;
+}

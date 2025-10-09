@@ -12,10 +12,15 @@ interface IssueResult {
 export class QuickSwitcherModal extends Modal {
 	private searchInput: HTMLInputElement;
 	private resultsContainer: HTMLElement;
+	private actionsContainer: HTMLElement;
 	private frontmatterUtils: FrontmatterUtils;
 	private allIssues: IssueResult[] = [];
 	private filteredIssues: IssueResult[] = [];
 	private selectedIndex = 0;
+
+	// Multi-select
+	private multiSelectMode = false;
+	private selectedFiles: Set<TFile> = new Set();
 
 	// Filters
 	private statusFilter: IssueStatus | 'all' = 'all';
@@ -35,6 +40,16 @@ export class QuickSwitcherModal extends Modal {
 		// Header
 		const header = contentEl.createDiv('quick-switcher-header');
 		header.createEl('h3', { text: 'Quick Switcher' });
+
+		// Multi-select toggle button
+		const multiSelectBtn = header.createEl('button', {
+			text: '☑ Multi-Select',
+			cls: 'multi-select-toggle-btn'
+		});
+		multiSelectBtn.addEventListener('click', () => {
+			this.toggleMultiSelectMode();
+			multiSelectBtn.toggleClass('active', this.multiSelectMode);
+		});
 
 		// Search input
 		const searchContainer = contentEl.createDiv('quick-switcher-search');
@@ -72,6 +87,10 @@ export class QuickSwitcherModal extends Modal {
 
 		// Results container
 		this.resultsContainer = contentEl.createDiv('quick-switcher-results');
+
+		// Batch actions container (hidden by default)
+		this.actionsContainer = contentEl.createDiv('quick-switcher-actions');
+		this.actionsContainer.hide();
 
 		// Load all issues
 		await this.loadIssues();
@@ -238,6 +257,14 @@ export class QuickSwitcherModal extends Modal {
 				item.addClass('selected');
 			}
 
+			// Checkbox (only in multi-select mode)
+			if (this.multiSelectMode) {
+				const checkbox = item.createDiv('issue-checkbox');
+				const isSelected = this.selectedFiles.has(result.file);
+				checkbox.setText(isSelected ? '☑' : '☐');
+				checkbox.addClass(isSelected ? 'checked' : 'unchecked');
+			}
+
 			// Status indicator
 			const statusIndicator = item.createDiv('issue-status-indicator');
 			statusIndicator.addClass(`status-${result.issue.status.toLowerCase().replace(' ', '-')}`);
@@ -262,7 +289,11 @@ export class QuickSwitcherModal extends Modal {
 
 			// Click handler
 			item.addEventListener('click', () => {
-				this.selectIssue(result);
+				if (this.multiSelectMode) {
+					this.toggleSelection(result.file);
+				} else {
+					this.selectIssue(result);
+				}
 			});
 		});
 	}
@@ -303,8 +334,20 @@ export class QuickSwitcherModal extends Modal {
 		} else if (e.key === 'Enter') {
 			e.preventDefault();
 			if (this.filteredIssues.length > 0) {
-				this.selectIssue(this.filteredIssues[this.selectedIndex]);
+				if (this.multiSelectMode) {
+					this.toggleSelection(this.filteredIssues[this.selectedIndex].file);
+				} else {
+					this.selectIssue(this.filteredIssues[this.selectedIndex]);
+				}
 			}
+		} else if (e.key === ' ' && this.multiSelectMode) {
+			e.preventDefault();
+			if (this.filteredIssues.length > 0) {
+				this.toggleSelection(this.filteredIssues[this.selectedIndex].file);
+			}
+		} else if (e.key === 'a' && (e.ctrlKey || e.metaKey) && this.multiSelectMode) {
+			e.preventDefault();
+			this.selectAll();
 		} else if (e.key === 'Escape') {
 			this.close();
 		}
@@ -322,6 +365,97 @@ export class QuickSwitcherModal extends Modal {
 		// Open the file
 		await this.app.workspace.getLeaf().openFile(result.file);
 		this.close();
+	}
+
+	private toggleMultiSelectMode() {
+		this.multiSelectMode = !this.multiSelectMode;
+
+		if (!this.multiSelectMode) {
+			// Clear selections when exiting multi-select mode
+			this.selectedFiles.clear();
+			this.actionsContainer.hide();
+		}
+
+		this.renderResults();
+	}
+
+	private toggleSelection(file: TFile) {
+		if (this.selectedFiles.has(file)) {
+			this.selectedFiles.delete(file);
+		} else {
+			this.selectedFiles.add(file);
+		}
+
+		this.renderResults();
+		this.renderBatchActions();
+	}
+
+	private selectAll() {
+		this.filteredIssues.forEach(result => {
+			this.selectedFiles.add(result.file);
+		});
+
+		this.renderResults();
+		this.renderBatchActions();
+	}
+
+	private renderBatchActions() {
+		this.actionsContainer.empty();
+
+		if (this.selectedFiles.size === 0) {
+			this.actionsContainer.hide();
+			return;
+		}
+
+		this.actionsContainer.show();
+
+		// Selection count
+		const count = this.actionsContainer.createEl('span', {
+			text: `${this.selectedFiles.size} selected`,
+			cls: 'selection-count'
+		});
+
+		// Clear selection button
+		const clearBtn = this.actionsContainer.createEl('button', {
+			text: 'Clear',
+			cls: 'batch-action-btn'
+		});
+		clearBtn.addEventListener('click', () => {
+			this.selectedFiles.clear();
+			this.renderResults();
+			this.renderBatchActions();
+		});
+
+		// Batch status change button
+		const statusBtn = this.actionsContainer.createEl('button', {
+			text: 'Change Status',
+			cls: 'batch-action-btn batch-action-primary'
+		});
+		statusBtn.addEventListener('click', () => {
+			this.plugin.batchCommands.batchChangeStatus(Array.from(this.selectedFiles));
+		});
+
+		// Batch priority change button
+		const priorityBtn = this.actionsContainer.createEl('button', {
+			text: 'Change Priority',
+			cls: 'batch-action-btn batch-action-primary'
+		});
+		priorityBtn.addEventListener('click', () => {
+			this.plugin.batchCommands.batchChangePriority(Array.from(this.selectedFiles));
+		});
+
+		// Batch delete button
+		const deleteBtn = this.actionsContainer.createEl('button', {
+			text: 'Delete',
+			cls: 'batch-action-btn batch-action-danger'
+		});
+		deleteBtn.addEventListener('click', async () => {
+			await this.plugin.batchCommands.batchDelete(Array.from(this.selectedFiles));
+			// Reload issues after delete
+			await this.loadIssues();
+			this.selectedFiles.clear();
+			this.filterIssues();
+		});
 	}
 
 	onClose() {
