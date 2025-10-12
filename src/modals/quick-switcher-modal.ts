@@ -99,6 +99,9 @@ export class QuickSwitcherModal extends Modal {
 		this.searchInput.addEventListener('input', () => this.filterIssues());
 		this.searchInput.addEventListener('keydown', (e) => this.handleKeydown(e));
 
+		// Also listen for keyboard events on the entire modal (for Ctrl+A when not focused on input)
+		contentEl.addEventListener('keydown', (e) => this.handleKeydown(e));
+
 		// Auto-focus search
 		setTimeout(() => this.searchInput.focus(), 10);
 
@@ -321,6 +324,14 @@ export class QuickSwitcherModal extends Modal {
 	}
 
 	private handleKeydown(e: KeyboardEvent) {
+		// Handle Ctrl+A first (before other keys) when in multi-select mode
+		if (e.key === 'a' && (e.ctrlKey || e.metaKey) && this.multiSelectMode) {
+			e.preventDefault();
+			e.stopPropagation();
+			this.selectAll();
+			return;
+		}
+
 		if (e.key === 'ArrowDown') {
 			e.preventDefault();
 			this.selectedIndex = Math.min(this.selectedIndex + 1, this.filteredIssues.length - 1);
@@ -345,9 +356,6 @@ export class QuickSwitcherModal extends Modal {
 			if (this.filteredIssues.length > 0) {
 				this.toggleSelection(this.filteredIssues[this.selectedIndex].file);
 			}
-		} else if (e.key === 'a' && (e.ctrlKey || e.metaKey) && this.multiSelectMode) {
-			e.preventDefault();
-			this.selectAll();
 		} else if (e.key === 'Escape') {
 			this.close();
 		}
