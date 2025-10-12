@@ -97,9 +97,8 @@ export class QuickSwitcherModal extends Modal {
 
 		// Set up event handlers
 		this.searchInput.addEventListener('input', () => this.filterIssues());
-		this.searchInput.addEventListener('keydown', (e) => this.handleKeydown(e));
 
-		// Also listen for keyboard events on the entire modal (for Ctrl+A when not focused on input)
+		// Listen for keyboard events on the entire modal (works regardless of focus)
 		contentEl.addEventListener('keydown', (e) => this.handleKeydown(e));
 
 		// Auto-focus search
@@ -107,6 +106,7 @@ export class QuickSwitcherModal extends Modal {
 
 		// Initial display (show recent or all)
 		this.showRecent = true;
+		recentBtn.addClass('active'); // Highlight button since Recent is ON by default
 		this.filterIssues();
 	}
 
@@ -405,6 +405,9 @@ export class QuickSwitcherModal extends Modal {
 
 		this.renderResults();
 		this.renderBatchActions();
+
+		// Refocus search input so arrow keys continue to work
+		this.searchInput.focus();
 	}
 
 	private selectAll() {
@@ -414,6 +417,9 @@ export class QuickSwitcherModal extends Modal {
 
 		this.renderResults();
 		this.renderBatchActions();
+
+		// Refocus search input so arrow keys continue to work
+		this.searchInput.focus();
 	}
 
 	private renderBatchActions() {
@@ -441,6 +447,8 @@ export class QuickSwitcherModal extends Modal {
 			this.selectedFiles.clear();
 			this.renderResults();
 			this.renderBatchActions();
+			// Refocus search input so arrow keys continue to work
+			this.searchInput.focus();
 		});
 
 		// Batch status change button
@@ -448,8 +456,13 @@ export class QuickSwitcherModal extends Modal {
 			text: 'Change Status',
 			cls: 'batch-action-btn batch-action-primary'
 		});
-		statusBtn.addEventListener('click', () => {
-			this.plugin.batchCommands.batchChangeStatus(Array.from(this.selectedFiles));
+		statusBtn.addEventListener('click', async () => {
+			await this.plugin.batchCommands.batchChangeStatus(Array.from(this.selectedFiles));
+			// Wait for metadata cache to update
+			await new Promise(resolve => setTimeout(resolve, 100));
+			// Reload issues after status change
+			await this.loadIssues();
+			this.filterIssues();
 		});
 
 		// Batch priority change button
@@ -457,8 +470,13 @@ export class QuickSwitcherModal extends Modal {
 			text: 'Change Priority',
 			cls: 'batch-action-btn batch-action-primary'
 		});
-		priorityBtn.addEventListener('click', () => {
-			this.plugin.batchCommands.batchChangePriority(Array.from(this.selectedFiles));
+		priorityBtn.addEventListener('click', async () => {
+			await this.plugin.batchCommands.batchChangePriority(Array.from(this.selectedFiles));
+			// Wait for metadata cache to update
+			await new Promise(resolve => setTimeout(resolve, 100));
+			// Reload issues after priority change
+			await this.loadIssues();
+			this.filterIssues();
 		});
 
 		// Batch delete button

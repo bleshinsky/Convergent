@@ -13,97 +13,119 @@ export class BatchCommands {
 	/**
 	 * Batch change status for multiple issues
 	 */
-	async batchChangeStatus(files: TFile[]) {
-		if (files.length === 0) {
-			new Notice('No issues selected');
-			return;
-		}
+	async batchChangeStatus(files: TFile[]): Promise<void> {
+		console.log('batchChangeStatus called with', files.length, 'files');
 
-		// Show status picker
-		new BatchStatusModal(
-			this.app,
-			async (newStatus: IssueStatus) => {
-				let successCount = 0;
-				let errorCount = 0;
-
-				// Update each file
-				for (const file of files) {
-					try {
-						const frontmatter = await this.frontmatterUtils.getFrontmatter(file);
-						if (!frontmatter || frontmatter.type !== 'issue') {
-							errorCount++;
-							continue;
-						}
-
-						// Update status and modified timestamp
-						await this.frontmatterUtils.updateFrontmatter(file, {
-							status: newStatus,
-							modified: new Date().toISOString()
-						});
-
-						successCount++;
-					} catch (error) {
-						console.error('Error updating status for', file.path, error);
-						errorCount++;
-					}
-				}
-
-				// Show result
-				if (errorCount === 0) {
-					new Notice(`Status changed for ${successCount} issue${successCount > 1 ? 's' : ''} → ${newStatus}`);
-				} else {
-					new Notice(`Status changed for ${successCount} issue${successCount > 1 ? 's' : ''} (${errorCount} failed)`);
-				}
+		return new Promise((resolve) => {
+			if (files.length === 0) {
+				new Notice('No issues selected');
+				resolve();
+				return;
 			}
-		).open();
+
+			// Show status picker
+			new BatchStatusModal(
+				this.app,
+				async (newStatus: IssueStatus) => {
+					console.log('Status selected:', newStatus);
+					let successCount = 0;
+					let errorCount = 0;
+
+					// Update each file
+					for (const file of files) {
+						try {
+							console.log('Processing file:', file.path);
+							const frontmatter = await this.frontmatterUtils.getFrontmatter(file);
+							console.log('Frontmatter:', frontmatter);
+
+							if (!frontmatter || frontmatter.type !== 'issue') {
+								console.log('Skipping non-issue file:', file.path);
+								errorCount++;
+								continue;
+							}
+
+							// Update status and modified timestamp
+							console.log('Updating status to:', newStatus);
+							await this.frontmatterUtils.updateFrontmatter(file, {
+								status: newStatus,
+								modified: new Date().toISOString()
+							});
+
+							successCount++;
+							console.log('Successfully updated:', file.path);
+						} catch (error) {
+							console.error('Error updating status for', file.path, error);
+							errorCount++;
+						}
+					}
+
+					// Show result
+					console.log('Final result - success:', successCount, 'errors:', errorCount);
+					if (errorCount === 0) {
+						new Notice(`Status changed for ${successCount} issue${successCount > 1 ? 's' : ''} → ${newStatus}`);
+					} else {
+						new Notice(`Status changed for ${successCount} issue${successCount > 1 ? 's' : ''} (${errorCount} failed)`);
+					}
+
+					// Resolve promise after operation completes
+					resolve();
+				}
+			).open();
+		});
 	}
 
 	/**
 	 * Batch change priority for multiple issues
 	 */
-	async batchChangePriority(files: TFile[]) {
-		if (files.length === 0) {
-			new Notice('No issues selected');
-			return;
-		}
-
-		// Show priority picker
-		new BatchPriorityModal(
-			this.app,
-			async (newPriority: IssuePriority) => {
-				let successCount = 0;
-				let errorCount = 0;
-
-				// Update each file
-				for (const file of files) {
-					try {
-						const frontmatter = await this.frontmatterUtils.getFrontmatter(file);
-						if (!frontmatter || frontmatter.type !== 'issue') {
-							errorCount++;
-							continue;
-						}
-
-						// Update priority and modified timestamp
-						await this.frontmatterUtils.updateFrontmatter(file, {
-							priority: newPriority,
-							modified: new Date().toISOString()
-						});
-
-						successCount++;
-					} catch (error) {
-						console.error('Error updating priority for', file.path, error);
-						errorCount++;
-					}
-				}
-
-				// Show result
-				if (errorCount === 0) {
-					new Notice(`Priority changed for ${successCount} issue${successCount > 1 ? 's' : ''} → ${newPriority}`);
-				} else {
-					new Notice(`Priority changed for ${successCount} issue${successCount > 1 ? 's' : ''} (${errorCount} failed)`);
-				}
+	async batchChangePriority(files: TFile[]): Promise<void> {
+		return new Promise((resolve) => {
+			if (files.length === 0) {
+				new Notice('No issues selected');
+				resolve();
+				return;
 			}
-		).open();
+
+			// Show priority picker
+			new BatchPriorityModal(
+				this.app,
+				async (newPriority: IssuePriority) => {
+					let successCount = 0;
+					let errorCount = 0;
+
+					// Update each file
+					for (const file of files) {
+						try {
+							const frontmatter = await this.frontmatterUtils.getFrontmatter(file);
+							if (!frontmatter || frontmatter.type !== 'issue') {
+								errorCount++;
+								continue;
+							}
+
+							// Update priority and modified timestamp
+							await this.frontmatterUtils.updateFrontmatter(file, {
+								priority: newPriority,
+								modified: new Date().toISOString()
+							});
+
+							successCount++;
+						} catch (error) {
+							console.error('Error updating priority for', file.path, error);
+							errorCount++;
+						}
+					}
+
+					// Show result
+					if (errorCount === 0) {
+						new Notice(`Priority changed for ${successCount} issue${successCount > 1 ? 's' : ''} → ${newPriority}`);
+					} else {
+						new Notice(`Priority changed for ${successCount} issue${successCount > 1 ? 's' : ''} (${errorCount} failed)`);
+					}
+
+					// Resolve promise after operation completes
+					resolve();
+				}
+			).open();
+		});
 	}
 
 	/**

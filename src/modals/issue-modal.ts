@@ -110,9 +110,21 @@ export class IssueModal extends Modal {
 		});
 		cancelBtn.addEventListener('click', () => this.close());
 
-		// Enter key submits form
+		// Enter key submits form (except in textarea where it creates new lines)
 		contentEl.addEventListener('keydown', (e) => {
-			if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+			if (e.key === 'Enter') {
+				const target = e.target as HTMLElement;
+				// Allow Enter in textarea for new lines
+				if (target.tagName === 'TEXTAREA') {
+					// Ctrl+Enter submits even from textarea
+					if (e.metaKey || e.ctrlKey) {
+						e.preventDefault();
+						this.handleSubmit();
+					}
+					return;
+				}
+				// Enter submits from any other field
+				e.preventDefault();
 				this.handleSubmit();
 			}
 		});

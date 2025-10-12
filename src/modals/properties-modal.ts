@@ -100,7 +100,8 @@ export class PropertiesModal extends Modal {
 
 		// Enter key submits form
 		contentEl.addEventListener('keydown', (e) => {
-			if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+			if (e.key === 'Enter') {
+				e.preventDefault();
 				this.handleSave();
 			}
 		});
