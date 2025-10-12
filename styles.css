@@ -1666,3 +1666,199 @@
 	background-color: var(--color-red);
 	color: white;
 }
+
+/* =============================================
+   TABLE SEARCH STYLES (Week 5 Day 4)
+   ============================================= */
+
+/* Search Container */
+.convergent-table-search {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	margin-right: 8px;
+}
+
+.convergent-table-search-input {
+	padding: 6px 32px 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	width: 200px;
+	transition: all 0.15s;
+}
+
+.convergent-table-search-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+	width: 250px;
+}
+
+.convergent-table-search-input::placeholder {
+	color: var(--text-muted);
+}
+
+/* Search Clear Button */
+.convergent-table-search-clear {
+	position: absolute;
+	right: 6px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 20px;
+	height: 20px;
+	border: none;
+	border-radius: 50%;
+	background-color: var(--background-modifier-border);
+	color: var(--text-muted);
+	font-size: 0.8em;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.15s;
+}
+
+.convergent-table-search-clear:hover {
+	background-color: var(--color-red);
+	color: white;
+}
+
+/* Search Highlight */
+.convergent-table-search-highlight {
+	background-color: var(--text-highlight-bg);
+	color: var(--text-normal);
+	padding: 1px 2px;
+	border-radius: 2px;
+	font-weight: 600;
+}
+
+/* =============================================
+   TABLE PAGINATION STYLES (Week 5 Day 4)
+   ============================================= */
+
+/* Pagination Container */
+.convergent-table-pagination {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 20px;
+	border-top: 1px solid var(--background-modifier-border);
+	flex-shrink: 0;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+/* Items Per Page Section */
+.convergent-table-pagination-per-page {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.9em;
+	color: var(--text-muted);
+}
+
+.convergent-table-pagination-select {
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.convergent-table-pagination-select:hover {
+	border-color: var(--interactive-accent);
+	background-color: var(--background-modifier-hover);
+}
+
+.convergent-table-pagination-select:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+/* Pagination Navigation */
+.convergent-table-pagination-nav {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.convergent-table-pagination-info {
+	color: var(--text-muted);
+	font-size: 0.9em;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+/* Pagination Buttons */
+.convergent-table-pagination-btn {
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	cursor: pointer;
+	transition: all 0.15s;
+	white-space: nowrap;
+}
+
+.convergent-table-pagination-btn:hover:not([disabled]) {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.convergent-table-pagination-btn[disabled] {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+/* Page Numbers Container */
+.convergent-table-pagination-pages {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+/* Individual Page Button */
+.convergent-table-pagination-page {
+	min-width: 32px;
+	height: 32px;
+	padding: 0 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.convergent-table-pagination-page:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.convergent-table-pagination-page.active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+	font-weight: bold;
+}
+
+/* Pagination Ellipsis */
+.convergent-table-pagination-ellipsis {
+	color: var(--text-muted);
+	font-size: 0.9em;
+	padding: 0 4px;
+}

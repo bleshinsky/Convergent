@@ -44,8 +44,14 @@ export class TableView extends ItemView {
 	private issues: Issue[] = [];
 	private sortedIssues: Issue[] = [];
 	private filteredIssues: Issue[] = [];
+	private searchedIssues: Issue[] = [];
+	private paginatedIssues: Issue[] = [];
 	private sortConfig: SortConfig[] = [];
 	private filterRules: FilterRule[] = [];
+	private searchQuery: string = '';
+	private searchDebounceTimer: NodeJS.Timeout | null = null;
+	private currentPage: number = 1;
+	private itemsPerPage: number = 25;
 	private columns: TableColumn[] = [
 		{ key: 'id', label: 'ID', width: '80px', visible: true, sortable: true },
 		{ key: 'title', label: 'Title', width: 'auto', visible: true, sortable: true },
@@ -145,14 +151,17 @@ export class TableView extends ItemView {
 			cls: 'convergent-table-count'
 		});
 
-		// Right side - filters and column settings
+		// Right side - search, filters, and column settings
 		const headerRight = header.createDiv('convergent-table-header-right');
+		this.renderSearch(headerRight);
 		this.renderFilters(headerRight);
 		this.renderColumnSettings(headerRight);
 
-		// Apply filters then sort
+		// Apply filters → sort → search → paginate
 		this.filteredIssues = this.applyFilters([...this.issues]);
 		this.sortedIssues = this.sortIssues([...this.filteredIssues]);
+		this.searchedIssues = this.applySearch([...this.sortedIssues]);
+		this.paginatedIssues = this.applyPagination([...this.searchedIssues]);
 
 		// Table container (scrollable)
 		const tableContainer = container.createDiv('convergent-table-container');
@@ -219,18 +228,268 @@ export class TableView extends ItemView {
 		// Table body
 		const tbody = table.createEl('tbody');
 
-		if (this.sortedIssues.length === 0) {
+		if (this.searchedIssues.length === 0) {
 			const emptyRow = tbody.createEl('tr', { cls: 'convergent-table-empty' });
 			const emptyCell = emptyRow.createEl('td', {
 				attr: { colspan: this.columns.filter(c => c.visible).length.toString() },
-				text: 'No issues found'
+				text: this.searchQuery ? 'No matching issues found' : 'No issues found'
 			});
 			return;
 		}
 
-		// Render each issue as a row
-		for (const issue of this.sortedIssues) {
+		// Render each issue as a row (paginated)
+		for (const issue of this.paginatedIssues) {
 			this.renderRow(tbody, issue);
+		}
+
+		// Pagination controls (below table)
+		this.renderPagination(container);
+	}
+
+	/**
+	 * Render search input
+	 */
+	private renderSearch(container: HTMLElement): void {
+		const searchContainer = container.createDiv('convergent-table-search');
+
+		const searchInput = searchContainer.createEl('input', {
+			type: 'text',
+			placeholder: 'Search issues...',
+			cls: 'convergent-table-search-input',
+			value: this.searchQuery
+		});
+
+		// Debounced search
+		searchInput.addEventListener('input', (e) => {
+			const value = (e.target as HTMLInputElement).value;
+
+			if (this.searchDebounceTimer) {
+				clearTimeout(this.searchDebounceTimer);
+			}
+
+			this.searchDebounceTimer = setTimeout(() => {
+				this.searchQuery = value;
+				this.currentPage = 1; // Reset to first page on new search
+				this.renderTable();
+			}, 300);
+		});
+
+		// Clear button (X)
+		if (this.searchQuery) {
+			const clearBtn = searchContainer.createEl('button', {
+				text: '✕',
+				cls: 'convergent-table-search-clear'
+			});
+			clearBtn.addEventListener('click', () => {
+				this.searchQuery = '';
+				this.currentPage = 1;
+				this.renderTable();
+			});
+		}
+	}
+
+	/**
+	 * Apply search to issues
+	 */
+	private applySearch(issues: Issue[]): Issue[] {
+		if (!this.searchQuery || this.searchQuery.trim() === '') {
+			return issues;
+		}
+
+		const query = this.searchQuery.toLowerCase().trim();
+
+		return issues.filter(issue => {
+			// Search across visible columns
+			for (const column of this.columns) {
+				if (!column.visible) continue;
+
+				const value = issue[column.key as keyof Issue];
+
+				if (column.key === 'id' || column.key === 'title') {
+					// Text search
+					if (value && String(value).toLowerCase().includes(query)) {
+						return true;
+					}
+				} else if (column.key === 'status' || column.key === 'priority') {
+					// Status/priority search
+					if (value && String(value).toLowerCase().includes(query)) {
+						return true;
+					}
+				} else if (column.key === 'labels') {
+					// Labels search
+					const labels = issue.labels || [];
+					if (labels.some(label => label.toLowerCase().includes(query))) {
+						return true;
+					}
+				}
+			}
+
+			return false;
+		});
+	}
+
+	/**
+	 * Apply pagination to issues
+	 */
+	private applyPagination(issues: Issue[]): Issue[] {
+		if (this.itemsPerPage === -1) {
+			// Show all
+			return issues;
+		}
+
+		const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+		const endIndex = startIndex + this.itemsPerPage;
+
+		return issues.slice(startIndex, endIndex);
+	}
+
+	/**
+	 * Render pagination controls
+	 */
+	private renderPagination(container: HTMLElement): void {
+		if (this.searchedIssues.length === 0) return;
+
+		const pagination = container.createDiv('convergent-table-pagination');
+
+		// Items per page selector
+		const perPageSection = pagination.createDiv('convergent-table-pagination-per-page');
+		perPageSection.createSpan({ text: 'Show:' });
+
+		const perPageSelect = perPageSection.createEl('select', {
+			cls: 'convergent-table-pagination-select'
+		});
+
+		const perPageOptions = [
+			{ value: 25, label: '25' },
+			{ value: 50, label: '50' },
+			{ value: 100, label: '100' },
+			{ value: -1, label: 'All' }
+		];
+
+		perPageOptions.forEach(opt => {
+			const option = perPageSelect.createEl('option', {
+				value: opt.value.toString(),
+				text: opt.label
+			});
+			if (this.itemsPerPage === opt.value) {
+				option.selected = true;
+			}
+		});
+
+		perPageSelect.addEventListener('change', (e) => {
+			this.itemsPerPage = parseInt((e.target as HTMLSelectElement).value);
+			this.currentPage = 1; // Reset to first page
+			this.renderTable();
+		});
+
+		// Page info and navigation
+		const totalPages = this.itemsPerPage === -1
+			? 1
+			: Math.ceil(this.searchedIssues.length / this.itemsPerPage);
+
+		if (totalPages > 1) {
+			const nav = pagination.createDiv('convergent-table-pagination-nav');
+
+			// Page info
+			const startItem = (this.currentPage - 1) * this.itemsPerPage + 1;
+			const endItem = Math.min(
+				this.currentPage * this.itemsPerPage,
+				this.searchedIssues.length
+			);
+
+			nav.createSpan({
+				text: `${startItem}-${endItem} of ${this.searchedIssues.length}`,
+				cls: 'convergent-table-pagination-info'
+			});
+
+			// Previous button
+			const prevBtn = nav.createEl('button', {
+				text: '‹ Previous',
+				cls: 'convergent-table-pagination-btn',
+				attr: { disabled: this.currentPage === 1 ? 'true' : '' }
+			});
+			prevBtn.addEventListener('click', () => {
+				if (this.currentPage > 1) {
+					this.currentPage--;
+					this.renderTable();
+				}
+			});
+
+			// Page numbers (show 5 at a time)
+			const pageNumbers = nav.createDiv('convergent-table-pagination-pages');
+
+			const maxPagesToShow = 5;
+			let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
+			let endPage = Math.min(totalPages, startPage + maxPagesToShow - 1);
+
+			// Adjust if we're near the end
+			if (endPage - startPage + 1 < maxPagesToShow) {
+				startPage = Math.max(1, endPage - maxPagesToShow + 1);
+			}
+
+			// First page + ellipsis
+			if (startPage > 1) {
+				const firstBtn = pageNumbers.createEl('button', {
+					text: '1',
+					cls: 'convergent-table-pagination-page'
+				});
+				firstBtn.addEventListener('click', () => {
+					this.currentPage = 1;
+					this.renderTable();
+				});
+
+				if (startPage > 2) {
+					pageNumbers.createSpan({ text: '...', cls: 'convergent-table-pagination-ellipsis' });
+				}
+			}
+
+			// Page number buttons
+			for (let i = startPage; i <= endPage; i++) {
+				const pageBtn = pageNumbers.createEl('button', {
+					text: i.toString(),
+					cls: `convergent-table-pagination-page ${i === this.currentPage ? 'active' : ''}`
+				});
+				const pageNum = i; // Capture for closure
+				pageBtn.addEventListener('click', () => {
+					this.currentPage = pageNum;
+					this.renderTable();
+				});
+			}
+
+			// Ellipsis + last page
+			if (endPage < totalPages) {
+				if (endPage < totalPages - 1) {
+					pageNumbers.createSpan({ text: '...', cls: 'convergent-table-pagination-ellipsis' });
+				}
+
+				const lastBtn = pageNumbers.createEl('button', {
+					text: totalPages.toString(),
+					cls: 'convergent-table-pagination-page'
+				});
+				lastBtn.addEventListener('click', () => {
+					this.currentPage = totalPages;
+					this.renderTable();
+				});
+			}
+
+			// Next button
+			const nextBtn = nav.createEl('button', {
+				text: 'Next ›',
+				cls: 'convergent-table-pagination-btn',
+				attr: { disabled: this.currentPage === totalPages ? 'true' : '' }
+			});
+			nextBtn.addEventListener('click', () => {
+				if (this.currentPage < totalPages) {
+					this.currentPage++;
+					this.renderTable();
+				}
+			});
+		} else {
+			// No pagination needed, just show count
+			pagination.createSpan({
+				text: `Showing ${this.searchedIssues.length} ${this.searchedIssues.length === 1 ? 'issue' : 'issues'}`,
+				cls: 'convergent-table-pagination-info'
+			});
 		}
 	}
 
@@ -781,15 +1040,21 @@ export class TableView extends ItemView {
 	private renderCell(cell: HTMLElement, issue: Issue, columnKey: string): void {
 		switch (columnKey) {
 			case 'id':
-				cell.setText(issue.id);
+				if (this.searchQuery) {
+					this.highlightText(cell, issue.id, this.searchQuery);
+				} else {
+					cell.setText(issue.id);
+				}
 				cell.addClass('convergent-table-cell-id');
 				break;
 
 			case 'title':
-				const titleSpan = cell.createSpan({
-					text: issue.title,
-					cls: 'convergent-table-cell-title'
-				});
+				const titleSpan = cell.createSpan({ cls: 'convergent-table-cell-title' });
+				if (this.searchQuery) {
+					this.highlightText(titleSpan, issue.title, this.searchQuery);
+				} else {
+					titleSpan.setText(issue.title);
+				}
 				break;
 
 			case 'status':
@@ -867,6 +1132,42 @@ export class TableView extends ItemView {
 					cell.setText('—');
 				}
 				break;
+		}
+	}
+
+	/**
+	 * Highlight search query in text
+	 */
+	private highlightText(element: HTMLElement, text: string, query: string): void {
+		if (!query || !text) {
+			element.setText(text || '');
+			return;
+		}
+
+		const lowerText = text.toLowerCase();
+		const lowerQuery = query.toLowerCase();
+		const index = lowerText.indexOf(lowerQuery);
+
+		if (index === -1) {
+			element.setText(text);
+			return;
+		}
+
+		// Split text into parts: before, match, after
+		const before = text.substring(0, index);
+		const match = text.substring(index, index + query.length);
+		const after = text.substring(index + query.length);
+
+		// Render with highlight
+		if (before) element.appendText(before);
+		const highlight = element.createEl('mark', {
+			text: match,
+			cls: 'convergent-table-search-highlight'
+		});
+		if (after) {
+			// Check for additional matches recursively
+			const afterSpan = element.createSpan();
+			this.highlightText(afterSpan, after, query);
 		}
 	}
 
