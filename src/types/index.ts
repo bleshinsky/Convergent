@@ -1,4 +1,33 @@
-import { TFile } from 'obsidian';
+// Re-export all types from separate files
+export type {
+	Issue,
+	IssueStatus,
+	IssuePriority,
+	RecurringConfig,
+	IssueCreateInput,
+	IssueUpdateInput
+} from './Issue';
+
+export {
+	STATUS_ORDER,
+	PRIORITY_ORDER,
+	DEFAULT_STATUS,
+	DEFAULT_PRIORITY
+} from './Issue';
+
+export type {
+	Project,
+	ProjectStatus,
+	ProjectLink,
+	ProjectCreateInput,
+	ProjectUpdateInput
+} from './Project';
+
+export {
+	PROJECT_STATUS_ORDER,
+	DEFAULT_PROJECT_STATUS,
+	DEFAULT_LEAD
+} from './Project';
 
 // Core entity types
 export type EntityType = 'issue' | 'project' | 'session' | 'decision' | 'blocker';
@@ -10,94 +39,6 @@ export type RelationType =
 	| 'blocks'
 	| 'blocked-by'
 	| 'related';
-
-// Issue types
-export type IssueStatus =
-	| 'Backlog'
-	| 'Todo'
-	| 'In Progress'
-	| 'In Review'
-	| 'Done'
-	| 'Canceled';
-
-export type IssuePriority = 'Low' | 'Medium' | 'High' | 'Urgent';
-
-export interface Issue {
-	// Core
-	type: 'issue';
-	id: string;
-	title: string;
-	status: IssueStatus;
-	created: string;
-	modified: string;
-
-	// Optional
-	priority?: IssuePriority;
-	estimate?: number;
-	due?: string;
-	labels?: string[];
-
-	// Relationships
-	project?: TFile;
-	parent?: TFile;
-	subIssues?: TFile[];
-	blockedBy?: TFile[];
-	blocks?: TFile[];
-	related?: TFile[];
-
-	// MSP
-	session?: TFile;
-	decisions?: TFile[];
-	progress?: number;
-
-	// Recurring
-	recurring?: {
-		enabled: boolean;
-		cadence: 'daily' | 'weekly' | 'biweekly' | 'monthly';
-		nextDue: string;
-	};
-
-	// Content
-	description?: string;
-	acceptanceCriteria?: string[];
-
-	// File reference
-	file?: TFile;
-}
-
-// Project types
-export type ProjectStatus =
-	| 'Planning'
-	| 'In Progress'
-	| 'On Hold'
-	| 'Completed'
-	| 'Canceled';
-
-export interface Project {
-	type: 'project';
-	id: string;
-	title: string;
-	status: ProjectStatus;
-	lead: string;
-	created: string;
-	target?: string;
-	icon?: string;
-
-	start?: string;
-	description?: string;
-	labels?: string[];
-
-	progress?: number;
-	totalIssues?: number;
-	completedIssues?: number;
-
-	milestones?: TFile[];
-	sessions?: TFile[];
-	documents?: TFile[];
-	links?: { url: string; title: string }[];
-
-	file?: TFile;
-}
 
 // MSP Session types
 export interface MSPSession {
