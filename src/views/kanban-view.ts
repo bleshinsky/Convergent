@@ -288,6 +288,35 @@ export class KanbanView extends ItemView {
 		const title = card.createDiv('kanban-card-title');
 		title.setText(issue.title);
 
+		// Metadata section
+		const meta = card.createDiv('kanban-card-meta');
+
+		// Relationship indicators
+		const hasRelationships = this.addRelationshipIndicators(meta, issue);
+
+		// Labels
+		if (issue.labels && issue.labels.length > 0) {
+			const labelsContainer = card.createDiv('kanban-card-labels');
+			const maxLabels = 3;
+			const visibleLabels = issue.labels.slice(0, maxLabels);
+
+			visibleLabels.forEach(label => {
+				labelsContainer.createSpan({ cls: 'kanban-label', text: label });
+			});
+
+			if (issue.labels.length > maxLabels) {
+				labelsContainer.createSpan({
+					cls: 'kanban-label-more',
+					text: `+${issue.labels.length - maxLabels}`
+				});
+			}
+		}
+
+		// Due date (if exists and upcoming)
+		if (issue.due) {
+			this.addDueDateIndicator(card, issue.due);
+		}
+
 		// Click handler - open issue
 		card.addEventListener('click', async (e) => {
 			if (!e.defaultPrevented && issue.file) {
@@ -296,6 +325,77 @@ export class KanbanView extends ItemView {
 		});
 
 		return card;
+	}
+
+	/**
+	 * Add relationship indicators to card metadata
+	 */
+	private addRelationshipIndicators(meta: HTMLElement, issue: Issue): boolean {
+		let hasRelationships = false;
+
+		// Parent indicator
+		if (issue.parent) {
+			meta.createSpan({ cls: 'kanban-meta-item', text: '↑', title: 'Has parent' });
+			hasRelationships = true;
+		}
+
+		// Sub-issues (children) indicator
+		if (issue.subIssues && issue.subIssues.length > 0) {
+			const childCount = issue.subIssues.length;
+			meta.createSpan({
+				cls: 'kanban-meta-item',
+				text: `↓${childCount}`,
+				title: `${childCount} sub-issue${childCount > 1 ? 's' : ''}`
+			});
+			hasRelationships = true;
+		}
+
+		// Blocked indicator
+		if (issue.blockedBy && issue.blockedBy.length > 0) {
+			meta.createSpan({
+				cls: 'kanban-meta-item blocked',
+				text: '🚫',
+				title: 'Blocked'
+			});
+			hasRelationships = true;
+		}
+
+		// Related count (if any)
+		if (issue.related && issue.related.length > 0) {
+			meta.createSpan({
+				cls: 'kanban-meta-item',
+				text: `🔗${issue.related.length}`,
+				title: `${issue.related.length} related issue${issue.related.length > 1 ? 's' : ''}`
+			});
+			hasRelationships = true;
+		}
+
+		return hasRelationships;
+	}
+
+	/**
+	 * Add due date indicator if upcoming
+	 */
+	private addDueDateIndicator(card: HTMLElement, dueDate: string): void {
+		try {
+			const due = new Date(dueDate);
+			const now = new Date();
+			const daysUntil = Math.ceil((due.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+			// Only show if within 7 days
+			if (daysUntil <= 7 && daysUntil >= 0) {
+				const dueEl = card.createDiv('kanban-card-due');
+				dueEl.addClass(daysUntil <= 2 ? 'due-urgent' : 'due-soon');
+				dueEl.setText(`📅 ${daysUntil}d`);
+			} else if (daysUntil < 0) {
+				// Overdue
+				const dueEl = card.createDiv('kanban-card-due');
+				dueEl.addClass('due-overdue');
+				dueEl.setText(`📅 Overdue`);
+			}
+		} catch (error) {
+			console.error('Invalid due date format:', dueDate, error);
+		}
 	}
 
 	/**

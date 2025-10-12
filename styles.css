@@ -287,6 +287,88 @@
 .kanban-card-title {
 	font-weight: 500;
 	line-height: 1.4;
+	margin-bottom: 8px;
+}
+
+.kanban-card-meta {
+	display: flex;
+	gap: 8px;
+	margin-bottom: 8px;
+	flex-wrap: wrap;
+	font-size: 0.85em;
+}
+
+.kanban-meta-item {
+	color: var(--text-muted);
+	font-weight: 500;
+}
+
+.kanban-meta-item.blocked {
+	color: var(--color-red);
+}
+
+.kanban-card-labels {
+	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+	margin-bottom: 8px;
+}
+
+.kanban-label {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 12px;
+	background-color: var(--background-modifier-border);
+	color: var(--text-normal);
+	font-size: 0.75em;
+	font-weight: 500;
+}
+
+.kanban-label-more {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 12px;
+	background-color: var(--background-secondary);
+	color: var(--text-muted);
+	font-size: 0.75em;
+	font-style: italic;
+}
+
+.kanban-card-due {
+	font-size: 0.8em;
+	padding: 2px 6px;
+	border-radius: 3px;
+	display: inline-block;
+	font-weight: 500;
+	margin-bottom: 4px;
+}
+
+.kanban-card-due.due-soon {
+	background-color: var(--color-yellow);
+	color: var(--text-on-accent);
+}
+
+.kanban-card-due.due-urgent {
+	background-color: var(--color-red);
+	color: white;
+	font-weight: bold;
+	animation: pulse 2s infinite;
+}
+
+.kanban-card-due.due-overdue {
+	background-color: var(--color-red);
+	color: white;
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.7;
+	}
 }
 
 /* Timeline view (coming in Week 11) */
