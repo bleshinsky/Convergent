@@ -266,6 +266,11 @@ export class QuickSwitcherModal extends Modal {
 				const isSelected = this.selectedFiles.has(result.file);
 				checkbox.setText(isSelected ? '☑' : '☐');
 				checkbox.addClass(isSelected ? 'checked' : 'unchecked');
+
+				// Add visual highlight to selected items
+				if (isSelected) {
+					item.addClass('multi-selected');
+				}
 			}
 
 			// Status indicator
@@ -325,11 +330,15 @@ export class QuickSwitcherModal extends Modal {
 
 	private handleKeydown(e: KeyboardEvent) {
 		// Handle Ctrl+A first (before other keys) when in multi-select mode
-		if (e.key === 'a' && (e.ctrlKey || e.metaKey) && this.multiSelectMode) {
-			e.preventDefault();
-			e.stopPropagation();
-			this.selectAll();
-			return;
+		if ((e.key === 'a' || e.key === 'A') && (e.ctrlKey || e.metaKey)) {
+			if (this.multiSelectMode) {
+				console.log('Ctrl+A pressed in multi-select mode');
+				e.preventDefault();
+				e.stopPropagation();
+				e.stopImmediatePropagation();
+				this.selectAll();
+				return;
+			}
 		}
 
 		if (e.key === 'ArrowDown') {
