@@ -82,9 +82,73 @@ export class KanbanView extends ItemView {
 		// Title
 		header.createEl('h3', { text: 'Kanban Board' });
 
-		// Filters container (will be populated in Day 4)
+		// Filters container
 		const filtersContainer = header.createDiv('kanban-filters');
-		// Placeholder for now
+		this.renderFilters(filtersContainer);
+	}
+
+	/**
+	 * Render filter controls
+	 */
+	private renderFilters(container: HTMLElement) {
+		container.empty();
+
+		// Search input
+		const searchContainer = container.createDiv('kanban-filter-search');
+		const searchInput = searchContainer.createEl('input', {
+			type: 'text',
+			placeholder: 'Search issues...',
+			cls: 'kanban-search-input'
+		});
+		searchInput.value = this.filters.search || '';
+		searchInput.addEventListener('input', (e) => {
+			this.filters.search = (e.target as HTMLInputElement).value;
+			this.applyFilters();
+		});
+
+		// Priority filter
+		const priorityContainer = container.createDiv('kanban-filter-priority');
+		priorityContainer.createSpan({ text: 'Priority: ', cls: 'kanban-filter-label' });
+
+		const prioritySelect = priorityContainer.createEl('select', { cls: 'kanban-filter-select' });
+		const priorities = ['all', 'Low', 'Medium', 'High', 'Urgent'];
+		priorities.forEach(p => {
+			const option = prioritySelect.createEl('option', { value: p, text: p === 'all' ? 'All' : p });
+			if (this.filters.priority === p) option.selected = true;
+		});
+		prioritySelect.addEventListener('change', (e) => {
+			this.filters.priority = (e.target as HTMLSelectElement).value as 'all' | 'Low' | 'Medium' | 'High' | 'Urgent';
+			this.applyFilters();
+		});
+
+		// Show canceled toggle
+		const canceledContainer = container.createDiv('kanban-filter-canceled');
+		const canceledCheckbox = canceledContainer.createEl('input', {
+			type: 'checkbox',
+			cls: 'kanban-filter-checkbox'
+		});
+		canceledCheckbox.checked = this.filters.showCanceled || false;
+		canceledCheckbox.addEventListener('change', (e) => {
+			this.filters.showCanceled = (e.target as HTMLInputElement).checked;
+			this.applyFilters();
+		});
+		canceledContainer.createSpan({ text: ' Show Canceled', cls: 'kanban-filter-label' });
+
+		// Clear filters button
+		const clearBtn = container.createEl('button', {
+			text: 'Clear',
+			cls: 'kanban-filter-clear'
+		});
+		clearBtn.addEventListener('click', () => {
+			this.filters = {
+				priority: 'all',
+				labels: [],
+				search: '',
+				showCanceled: false
+			};
+			this.renderFilters(container);
+			this.applyFilters();
+		});
 	}
 
 	/**
@@ -176,16 +240,9 @@ export class KanbanView extends ItemView {
 			}
 		});
 
-		// Filter issues for this status
-		const columnIssues = this.allIssues.filter(issue => {
-			// Apply status filter
-			if (issue.status !== status) return false;
-
-			// Hide canceled if filter is off
-			if (!this.filters.showCanceled && status === 'Canceled') return false;
-
-			return true;
-		});
+		// Get filtered issues for this status
+		const filteredIssues = this.getFilteredIssues();
+		const columnIssues = filteredIssues.filter(issue => issue.status === status);
 
 		// Render column header
 		this.renderColumnHeader(column, status, columnIssues);
@@ -490,6 +547,47 @@ export class KanbanView extends ItemView {
 			console.error('Error handling drop:', error);
 			new Notice('Failed to update issue status');
 		}
+	}
+
+	/**
+	 * Apply filters to issues and re-render board
+	 */
+	private applyFilters(): void {
+		this.renderBoard();
+	}
+
+	/**
+	 * Get filtered issues based on current filters
+	 */
+	private getFilteredIssues(): Issue[] {
+		return this.allIssues.filter(issue => {
+			// Priority filter
+			if (this.filters.priority && this.filters.priority !== 'all') {
+				if (issue.priority !== this.filters.priority) return false;
+			}
+
+			// Search filter (title and ID)
+			if (this.filters.search && this.filters.search.trim().length > 0) {
+				const query = this.filters.search.toLowerCase();
+				const titleMatch = issue.title.toLowerCase().includes(query);
+				const idMatch = issue.id?.toLowerCase().includes(query);
+				if (!titleMatch && !idMatch) return false;
+			}
+
+			// Show canceled filter
+			if (!this.filters.showCanceled && issue.status === 'Canceled') {
+				return false;
+			}
+
+			// Labels filter (if implemented)
+			if (this.filters.labels && this.filters.labels.length > 0) {
+				if (!issue.labels || !this.filters.labels.some(l => issue.labels?.includes(l))) {
+					return false;
+				}
+			}
+
+			return true;
+		});
 	}
 
 	/**
