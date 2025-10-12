@@ -7,6 +7,7 @@ import { BatchCommands } from './commands/batch-commands';
 import { RelationshipCommands } from './commands/relationship-commands';
 import { FrontmatterUtils } from './utils/frontmatter';
 import { RelationshipUtils } from './utils/relationships';
+import { KanbanView, KANBAN_VIEW_TYPE } from './views/kanban-view';
 
 export default class ConvergentPlugin extends Plugin {
 	settings: ConvergentSettings;
@@ -27,6 +28,12 @@ export default class ConvergentPlugin extends Plugin {
 		this.frontmatterUtils = new FrontmatterUtils(this.app);
 		this.relationshipUtils = new RelationshipUtils(this.app);
 
+		// Register views
+		this.registerView(
+			KANBAN_VIEW_TYPE,
+			(leaf) => new KanbanView(leaf, this)
+		);
+
 		// Initialize command handlers
 		this.issueCommands = new IssueCommands(this.app, this, this.frontmatterUtils);
 		this.switcherCommands = new SwitcherCommands(this.app, this);
@@ -38,6 +45,11 @@ export default class ConvergentPlugin extends Plugin {
 
 		// Register event handlers
 		this.registerEventHandlers();
+
+		// Add ribbon icon for Kanban view
+		this.addRibbonIcon('layout-dashboard', 'Open Kanban Board', () => {
+			this.activateKanbanView();
+		});
 
 		// Add settings tab
 		this.addSettingTab(new ConvergentSettingTab(this.app, this));
@@ -73,11 +85,9 @@ export default class ConvergentPlugin extends Plugin {
 
 		// Open Kanban view
 		this.addCommand({
-			id: 'open-kanban',
+			id: 'open-kanban-board',
 			name: 'Open Kanban board',
-			callback: () => {
-				new Notice('Kanban view - Coming in Week 4!');
-			}
+			callback: () => this.activateKanbanView()
 		});
 
 		// Start session (MSP)
@@ -109,5 +119,29 @@ export default class ConvergentPlugin extends Plugin {
 		);
 
 		console.log('Convergent event handlers registered');
+	}
+
+	async activateKanbanView() {
+		const { workspace } = this.app;
+
+		// Check if view is already open
+		let leaf = workspace.getLeavesOfType(KANBAN_VIEW_TYPE)[0];
+
+		if (!leaf) {
+			// Open in right sidebar
+			const rightLeaf = workspace.getRightLeaf(false);
+			if (rightLeaf) {
+				await rightLeaf.setViewState({
+					type: KANBAN_VIEW_TYPE,
+					active: true
+				});
+				leaf = rightLeaf;
+			}
+		}
+
+		// Reveal the leaf
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
 	}
 }

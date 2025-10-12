@@ -74,41 +74,207 @@
 	font-weight: bold;
 }
 
-/* Kanban board (coming in Week 4) */
+/* Kanban Board View */
 .convergent-kanban {
 	display: flex;
-	gap: 16px;
-	overflow-x: auto;
-	padding: 16px;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+	background-color: var(--background-primary);
 }
 
-.convergent-kanban-column {
-	flex: 0 0 300px;
-	background-color: var(--background-secondary);
-	border-radius: 8px;
-	padding: 12px;
-}
-
-.convergent-kanban-column-header {
-	font-weight: 600;
-	margin-bottom: 12px;
+/* Kanban Header */
+.kanban-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	flex-shrink: 0;
+	flex-wrap: wrap;
+	gap: 12px;
 }
 
-.convergent-kanban-card {
+.kanban-header h3 {
+	margin: 0;
+	font-size: 1.3em;
+	font-weight: 600;
+}
+
+.kanban-filters {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+/* Kanban Board Container */
+.kanban-board {
+	display: flex;
+	gap: 16px;
+	padding: 16px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	flex: 1;
+	min-height: 0;
+}
+
+/* Kanban Column */
+.kanban-column {
+	flex: 0 0 280px;
+	display: flex;
+	flex-direction: column;
+	background-color: var(--background-secondary);
+	border-radius: 8px;
+	max-height: 100%;
+}
+
+.kanban-column-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	flex-shrink: 0;
+}
+
+.kanban-status-icon {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+.kanban-status-name {
+	flex: 1;
+	font-weight: 600;
+	font-size: 0.95em;
+}
+
+.kanban-issue-count {
+	background-color: var(--background-modifier-border);
+	color: var(--text-muted);
+	padding: 2px 8px;
+	border-radius: 12px;
+	font-size: 0.85em;
+	font-weight: 500;
+}
+
+.kanban-add-btn {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 50%;
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: 1.2em;
+	font-weight: bold;
+	transition: all 0.2s;
+}
+
+.kanban-add-btn:hover {
+	background-color: var(--interactive-hover);
+	transform: scale(1.1);
+}
+
+.kanban-column-body {
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 8px;
+	min-height: 100px;
+}
+
+.kanban-column-body::-webkit-scrollbar {
+	width: 6px;
+}
+
+.kanban-column-body::-webkit-scrollbar-thumb {
+	background-color: var(--background-modifier-border);
+	border-radius: 3px;
+}
+
+/* Empty State */
+.kanban-empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 40px 20px;
+	text-align: center;
+	color: var(--text-muted);
+}
+
+.kanban-empty-icon {
+	font-size: 3em;
+	margin-bottom: 12px;
+	opacity: 0.5;
+}
+
+.kanban-empty-text {
+	font-size: 1em;
+	margin-bottom: 8px;
+}
+
+.kanban-empty-hint {
+	font-size: 0.85em;
+	font-style: italic;
+}
+
+/* Kanban Card */
+.kanban-card {
 	background-color: var(--background-primary);
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 6px;
 	padding: 12px;
 	margin-bottom: 8px;
 	cursor: pointer;
-	transition: box-shadow 0.2s;
+	transition: all 0.15s;
 }
 
-.convergent-kanban-card:hover {
+.kanban-card:hover {
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	transform: translateY(-1px);
+}
+
+.kanban-card-header {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.kanban-card-priority {
+	font-size: 1.2em;
+	font-weight: bold;
+}
+
+.kanban-card-priority.priority-low {
+	color: var(--text-muted);
+}
+
+.kanban-card-priority.priority-medium {
+	color: var(--color-blue);
+}
+
+.kanban-card-priority.priority-high {
+	color: var(--color-orange);
+}
+
+.kanban-card-priority.priority-urgent {
+	color: var(--color-red);
+}
+
+.kanban-card-id {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	font-weight: 500;
+}
+
+.kanban-card-title {
+	font-weight: 500;
+	line-height: 1.4;
 }
 
 /* Timeline view (coming in Week 11) */
