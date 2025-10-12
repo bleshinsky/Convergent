@@ -38,6 +38,9 @@ export class PropertiesModal extends Modal {
 		contentEl.createEl('h2', { text: 'Edit Properties' });
 		contentEl.createDiv({ cls: 'convergent-properties-subtitle', text: this.issue.title });
 
+		// Relationships section (read-only display)
+		this.renderRelationships(contentEl);
+
 		// Labels
 		new Setting(contentEl)
 			.setName('Labels')
@@ -105,6 +108,63 @@ export class PropertiesModal extends Modal {
 				this.handleSave();
 			}
 		});
+	}
+
+	private renderRelationships(contentEl: HTMLElement) {
+		const relationshipUtils = this.plugin.relationshipUtils;
+		const relationshipParts: string[] = [];
+
+		// Parent
+		if (this.issue.parent) {
+			const parentLink = relationshipUtils.parseWikilinks(this.issue.parent as any)[0];
+			if (parentLink) {
+				const parentFile = relationshipUtils.resolveLink(parentLink);
+				if (parentFile) {
+					relationshipParts.push(`↑ Parent: ${parentFile.basename}`);
+				}
+			}
+		}
+
+		// Sub-issues
+		const childCount = relationshipUtils.getChildCount(this.issue);
+		if (childCount > 0) {
+			relationshipParts.push(`↓ ${childCount} sub-issue${childCount > 1 ? 's' : ''}`);
+		}
+
+		// Blocked by
+		const blockerCount = relationshipUtils.getBlockerCount(this.issue);
+		if (blockerCount > 0) {
+			relationshipParts.push(`🚫 Blocked by ${blockerCount} issue${blockerCount > 1 ? 's' : ''}`);
+		}
+
+		// Blocks
+		if ((this.issue as any).blocks) {
+			const blocks = relationshipUtils.resolveLinks((this.issue as any).blocks);
+			if (blocks.length > 0) {
+				relationshipParts.push(`🔒 Blocks ${blocks.length} issue${blocks.length > 1 ? 's' : ''}`);
+			}
+		}
+
+		// Related
+		if (this.issue.related) {
+			const related = relationshipUtils.resolveLinks(this.issue.related as any);
+			if (related.length > 0) {
+				relationshipParts.push(`🔗 ${related.length} related issue${related.length > 1 ? 's' : ''}`);
+			}
+		}
+
+		// Only show section if there are relationships
+		if (relationshipParts.length > 0) {
+			const relationshipsSection = contentEl.createDiv({ cls: 'convergent-relationships-section' });
+			relationshipsSection.createEl('h3', { text: 'Relationships' });
+
+			const relationshipsContent = relationshipsSection.createDiv({ cls: 'convergent-relationships-content' });
+			relationshipsContent.setText(relationshipParts.join(' • '));
+
+			// Add hint about how to manage relationships
+			const hint = relationshipsSection.createDiv({ cls: 'convergent-muted' });
+			hint.setText('Use Ctrl+Shift+Y (parent) or Ctrl+Shift+U (child) to manage relationships');
+		}
 	}
 
 	async handleSave() {

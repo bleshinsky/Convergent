@@ -291,6 +291,30 @@ export class QuickSwitcherModal extends Modal {
 
 			if (result.issue.id) metaParts.push(result.issue.id);
 			if (result.issue.priority) metaParts.push(`${this.getPriorityIcon(result.issue.priority)} ${result.issue.priority}`);
+
+			// Relationship metadata (NEW in Week 3)
+			const relationshipUtils = this.plugin.relationshipUtils;
+
+			// Show parent indicator
+			if (result.issue.parent) {
+				const parentLink = relationshipUtils.parseWikilinks(result.issue.parent as any)[0];
+				if (parentLink) {
+					metaParts.push('↑ Parent');
+				}
+			}
+
+			// Show children count
+			const childCount = relationshipUtils.getChildCount(result.issue);
+			if (childCount > 0) {
+				metaParts.push(`↓ ${childCount} child${childCount > 1 ? 'ren' : ''}`);
+			}
+
+			// Show blocked status
+			if (relationshipUtils.isBlocked(result.issue)) {
+				const blockerCount = relationshipUtils.getBlockerCount(result.issue);
+				metaParts.push(`🚫 Blocked by ${blockerCount}`);
+			}
+
 			if (result.issue.labels?.length) metaParts.push(result.issue.labels.join(', '));
 
 			meta.setText(metaParts.join(' • '));

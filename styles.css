@@ -382,6 +382,28 @@
 	font-style: italic;
 }
 
+.convergent-relationships-section {
+	margin-bottom: 20px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.convergent-relationships-section h3 {
+	font-size: 1em;
+	font-weight: 600;
+	margin: 0 0 8px 0;
+	color: var(--text-normal);
+}
+
+.convergent-relationships-content {
+	padding: 8px 12px;
+	background-color: var(--background-secondary);
+	border-radius: 4px;
+	font-size: 0.9em;
+	color: var(--text-normal);
+	margin-bottom: 8px;
+}
+
 /* Multi-Select Mode */
 .multi-select-toggle-btn {
 	margin-left: auto;
