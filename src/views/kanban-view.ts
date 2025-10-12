@@ -32,6 +32,8 @@ export class KanbanView extends ItemView {
 		search: '',
 		showCanceled: false
 	};
+	private searchDebounceTimer: number | null = null;
+	private refreshTimer: number | null = null;
 
 	constructor(leaf: WorkspaceLeaf, plugin: ConvergentPlugin) {
 		super(leaf);
@@ -55,6 +57,12 @@ export class KanbanView extends ItemView {
 		container.empty();
 		container.addClass('convergent-kanban');
 
+		// Register keyboard shortcuts
+		this.registerKeyboardShortcuts();
+
+		// Register auto-refresh on file changes
+		this.registerAutoRefresh();
+
 		// Render header
 		this.renderHeader(container);
 
@@ -66,6 +74,90 @@ export class KanbanView extends ItemView {
 		this.renderBoard();
 
 		console.log('Kanban view opened');
+	}
+
+	/**
+	 * Register keyboard shortcuts for this view
+	 */
+	private registerKeyboardShortcuts() {
+		if (!this.scope) return;
+
+		// Cmd/Ctrl+F - Focus search
+		this.scope.register(['Mod'], 'f', (evt) => {
+			evt.preventDefault();
+			const searchInput = this.containerEl.querySelector('.kanban-search-input') as HTMLInputElement;
+			if (searchInput) {
+				searchInput.focus();
+				searchInput.select();
+			}
+			return false;
+		});
+
+		// Cmd/Ctrl+R - Refresh board
+		this.scope.register(['Mod'], 'r', (evt) => {
+			evt.preventDefault();
+			this.refreshBoard();
+			return false;
+		});
+
+		// Cmd/Ctrl+Shift+C - Clear filters
+		this.scope.register(['Mod', 'Shift'], 'c', (evt) => {
+			evt.preventDefault();
+			this.clearFilters();
+			return false;
+		});
+	}
+
+	/**
+	 * Register auto-refresh on file changes
+	 */
+	private registerAutoRefresh() {
+		// Watch for file modifications in issues folder
+		this.registerEvent(
+			this.app.vault.on('modify', (file: TFile) => {
+				// Check if modified file is in issues folder
+				if (file.path.startsWith(this.plugin.settings.issuesFolder)) {
+					// Debounced refresh
+					this.scheduleRefresh();
+				}
+			})
+		);
+
+		// Watch for file deletion
+		this.registerEvent(
+			this.app.vault.on('delete', (file) => {
+				if (file.path.startsWith(this.plugin.settings.issuesFolder)) {
+					this.scheduleRefresh();
+				}
+			})
+		);
+
+		// Watch for file creation
+		this.registerEvent(
+			this.app.vault.on('create', (file) => {
+				if (file.path.startsWith(this.plugin.settings.issuesFolder)) {
+					this.scheduleRefresh();
+				}
+			})
+		);
+	}
+
+	/**
+	 * Clear all filters
+	 */
+	private clearFilters() {
+		this.filters = {
+			priority: 'all',
+			labels: [],
+			search: '',
+			showCanceled: false
+		};
+		const filtersContainer = this.containerEl.querySelector('.kanban-filters');
+		if (filtersContainer) {
+			this.renderFilters(filtersContainer as HTMLElement);
+		}
+		this.applyFilters();
+		new Notice('Filters cleared');
 	}
 
 	async onClose() {
@@ -102,8 +194,8 @@ export class KanbanView extends ItemView {
 		});
 		searchInput.value = this.filters.search || '';
 		searchInput.addEventListener('input', (e) => {
-			this.filters.search = (e.target as HTMLInputElement).value;
-			this.applyFilters();
+			const value = (e.target as HTMLInputElement).value;
+			this.handleSearchInput(value);
 		});
 
 		// Priority filter
@@ -588,6 +680,35 @@ export class KanbanView extends ItemView {
 
 			return true;
 		});
+	}
+
+	/**
+	 * Handle search input with debouncing
+	 */
+	private handleSearchInput(value: string) {
+		if (this.searchDebounceTimer) {
+			window.clearTimeout(this.searchDebounceTimer);
+		}
+
+		this.searchDebounceTimer = window.setTimeout(() => {
+			this.filters.search = value;
+			this.applyFilters();
+		}, 300);
+	}
+
+	/**
+	 * Schedule a debounced refresh
+	 */
+	private scheduleRefresh() {
+		if (this.refreshTimer) {
+			window.clearTimeout(this.refreshTimer);
+		}
+
+		this.refreshTimer = window.setTimeout(async () => {
+			await this.loadIssues();
+			this.renderBoard();
+			console.log('Board auto-refreshed');
+		}, 500);
 	}
 
 	/**
