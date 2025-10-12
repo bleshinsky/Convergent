@@ -4,14 +4,18 @@ import { ConvergentSettingTab } from './settings-tab';
 import { IssueCommands } from './commands/issue-commands';
 import { SwitcherCommands } from './commands/switcher-commands';
 import { BatchCommands } from './commands/batch-commands';
+import { RelationshipCommands } from './commands/relationship-commands';
 import { FrontmatterUtils } from './utils/frontmatter';
+import { RelationshipUtils } from './utils/relationships';
 
 export default class ConvergentPlugin extends Plugin {
 	settings: ConvergentSettings;
 	frontmatterUtils: FrontmatterUtils;
+	relationshipUtils: RelationshipUtils;
 	issueCommands: IssueCommands;
 	switcherCommands: SwitcherCommands;
 	batchCommands: BatchCommands;
+	relationshipCommands: RelationshipCommands;
 
 	async onload() {
 		console.log('Loading Convergent plugin');
@@ -21,11 +25,13 @@ export default class ConvergentPlugin extends Plugin {
 
 		// Initialize utilities
 		this.frontmatterUtils = new FrontmatterUtils(this.app);
+		this.relationshipUtils = new RelationshipUtils(this.app);
 
 		// Initialize command handlers
 		this.issueCommands = new IssueCommands(this.app, this, this.frontmatterUtils);
 		this.switcherCommands = new SwitcherCommands(this.app, this);
 		this.batchCommands = new BatchCommands(this.app, this);
+		this.relationshipCommands = new RelationshipCommands(this.app, this, this.relationshipUtils, this.frontmatterUtils);
 
 		// Register commands
 		this.registerCommands();
@@ -61,6 +67,9 @@ export default class ConvergentPlugin extends Plugin {
 
 		// Register switcher commands (quick switcher)
 		this.switcherCommands.registerCommands();
+
+		// Register relationship commands (parent/child, blocking, related)
+		this.relationshipCommands.registerCommands();
 
 		// Open Kanban view
 		this.addCommand({

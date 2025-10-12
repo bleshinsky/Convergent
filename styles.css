@@ -520,3 +520,40 @@
 .modal-button-container button.mod-warning:hover {
 	background: darkred;
 }
+
+/* Relationship Modal */
+.relationship-suggestion {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 8px 0;
+}
+
+.relationship-icon {
+	font-size: 1.4em;
+	width: 28px;
+	text-align: center;
+	flex-shrink: 0;
+}
+
+.relationship-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.relationship-title {
+	font-weight: 500;
+	font-size: 1em;
+	margin-bottom: 2px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.relationship-meta {
+	color: var(--text-muted);
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
