@@ -18,11 +18,34 @@ interface SortConfig {
 	level: number;
 }
 
+type FilterOperator =
+	| 'contains'
+	| 'equals'
+	| 'startsWith'
+	| 'before'
+	| 'after'
+	| 'between'
+	| 'is'
+	| 'isNot'
+	| 'isEmpty'
+	| 'isNotEmpty'
+	| 'in';
+
+interface FilterRule {
+	id: string;
+	property: 'title' | 'id' | 'status' | 'priority' | 'labels' | 'due' | 'created' | 'modified';
+	operator: FilterOperator;
+	value: string | string[] | { start?: string; end?: string };
+	combineWith?: 'AND' | 'OR';
+}
+
 export class TableView extends ItemView {
 	plugin: ConvergentPlugin;
 	private issues: Issue[] = [];
 	private sortedIssues: Issue[] = [];
+	private filteredIssues: Issue[] = [];
 	private sortConfig: SortConfig[] = [];
+	private filterRules: FilterRule[] = [];
 	private columns: TableColumn[] = [
 		{ key: 'id', label: 'ID', width: '80px', visible: true, sortable: true },
 		{ key: 'title', label: 'Title', width: 'auto', visible: true, sortable: true },
@@ -122,12 +145,14 @@ export class TableView extends ItemView {
 			cls: 'convergent-table-count'
 		});
 
-		// Right side - column settings
+		// Right side - filters and column settings
 		const headerRight = header.createDiv('convergent-table-header-right');
+		this.renderFilters(headerRight);
 		this.renderColumnSettings(headerRight);
 
-		// Sort issues
-		this.sortedIssues = this.sortIssues([...this.issues]);
+		// Apply filters then sort
+		this.filteredIssues = this.applyFilters([...this.issues]);
+		this.sortedIssues = this.sortIssues([...this.filteredIssues]);
 
 		// Table container (scrollable)
 		const tableContainer = container.createDiv('convergent-table-container');
@@ -207,6 +232,436 @@ export class TableView extends ItemView {
 		for (const issue of this.sortedIssues) {
 			this.renderRow(tbody, issue);
 		}
+	}
+
+	/**
+	 * Render filters UI
+	 */
+	private renderFilters(container: HTMLElement): void {
+		const filtersBtn = container.createEl('button', {
+			cls: 'convergent-table-filters-btn',
+			text: '🔍 Filters'
+		});
+
+		// Show active filter count
+		if (this.filterRules.length > 0) {
+			filtersBtn.createSpan({
+				cls: 'convergent-table-filters-count',
+				text: this.filterRules.length.toString()
+			});
+		}
+
+		const dropdown = container.createDiv('convergent-table-filters-dropdown');
+		dropdown.style.display = 'none';
+
+		// Filter rules section
+		const rulesSection = dropdown.createDiv('convergent-table-filters-section');
+		rulesSection.createEl('h5', { text: 'Filter Rules' });
+
+		// Render existing filter rules
+		const rulesContainer = rulesSection.createDiv('convergent-table-filters-rules');
+		this.renderFilterRules(rulesContainer);
+
+		// Add filter button
+		const addBtn = rulesSection.createEl('button', {
+			text: '+ Add Filter',
+			cls: 'convergent-table-filters-add-btn'
+		});
+		addBtn.addEventListener('click', () => {
+			this.addFilterRule();
+		});
+
+		// Clear all filters button
+		if (this.filterRules.length > 0) {
+			const clearBtn = rulesSection.createEl('button', {
+				text: '✕ Clear All Filters',
+				cls: 'convergent-table-filters-clear-btn'
+			});
+			clearBtn.addEventListener('click', () => {
+				this.filterRules = [];
+				this.renderTable();
+			});
+		}
+
+		// Toggle dropdown
+		filtersBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			const isVisible = dropdown.style.display !== 'none';
+			dropdown.style.display = isVisible ? 'none' : 'block';
+		});
+
+		// Close on outside click
+		document.addEventListener('click', (e) => {
+			if (!container.contains(e.target as Node)) {
+				dropdown.style.display = 'none';
+			}
+		});
+	}
+
+	/**
+	 * Render individual filter rules
+	 */
+	private renderFilterRules(container: HTMLElement): void {
+		container.empty();
+
+		if (this.filterRules.length === 0) {
+			container.createDiv({
+				cls: 'convergent-table-filters-empty',
+				text: 'No filters applied'
+			});
+			return;
+		}
+
+		for (let i = 0; i < this.filterRules.length; i++) {
+			const rule = this.filterRules[i];
+			const ruleEl = container.createDiv('convergent-table-filter-rule');
+
+			// AND/OR toggle (not for first rule)
+			if (i > 0) {
+				const combineToggle = ruleEl.createDiv('convergent-table-filter-combine');
+				const andBtn = combineToggle.createEl('button', {
+					text: 'AND',
+					cls: rule.combineWith === 'AND' ? 'active' : ''
+				});
+				const orBtn = combineToggle.createEl('button', {
+					text: 'OR',
+					cls: rule.combineWith === 'OR' ? 'active' : ''
+				});
+
+				andBtn.addEventListener('click', () => {
+					rule.combineWith = 'AND';
+					this.renderTable();
+				});
+
+				orBtn.addEventListener('click', () => {
+					rule.combineWith = 'OR';
+					this.renderTable();
+				});
+			}
+
+			// Property select
+			const propertySelect = ruleEl.createEl('select', { cls: 'convergent-table-filter-property' });
+			const properties = [
+				{ value: 'title', label: 'Title' },
+				{ value: 'id', label: 'ID' },
+				{ value: 'status', label: 'Status' },
+				{ value: 'priority', label: 'Priority' },
+				{ value: 'labels', label: 'Labels' },
+				{ value: 'due', label: 'Due Date' }
+			];
+			properties.forEach(prop => {
+				const option = propertySelect.createEl('option', { value: prop.value, text: prop.label });
+				if (rule.property === prop.value) option.selected = true;
+			});
+			propertySelect.addEventListener('change', (e) => {
+				rule.property = (e.target as HTMLSelectElement).value as any;
+				this.renderTable();
+			});
+
+			// Operator select (changes based on property)
+			const operatorSelect = ruleEl.createEl('select', { cls: 'convergent-table-filter-operator' });
+			this.populateOperatorSelect(operatorSelect, rule.property, rule.operator);
+			operatorSelect.addEventListener('change', (e) => {
+				rule.operator = (e.target as HTMLSelectElement).value as FilterOperator;
+				this.renderTable();
+			});
+
+			// Value input (changes based on property and operator)
+			const valueContainer = ruleEl.createDiv('convergent-table-filter-value');
+			this.renderFilterValue(valueContainer, rule);
+
+			// Remove button
+			const removeBtn = ruleEl.createEl('button', {
+				text: '✕',
+				cls: 'convergent-table-filter-remove-btn'
+			});
+			removeBtn.addEventListener('click', () => {
+				this.filterRules.splice(i, 1);
+				this.renderTable();
+			});
+		}
+	}
+
+	/**
+	 * Populate operator dropdown based on property type
+	 */
+	private populateOperatorSelect(select: HTMLSelectElement, property: string, currentOperator: FilterOperator): void {
+		select.empty();
+
+		let operators: { value: FilterOperator; label: string }[] = [];
+
+		if (property === 'title' || property === 'id') {
+			// Text operators
+			operators = [
+				{ value: 'contains', label: 'contains' },
+				{ value: 'equals', label: 'equals' },
+				{ value: 'startsWith', label: 'starts with' }
+			];
+		} else if (property === 'status' || property === 'priority' || property === 'labels') {
+			// Multi-select operators
+			operators = [
+				{ value: 'in', label: 'is one of' },
+				{ value: 'isEmpty', label: 'is empty' },
+				{ value: 'isNotEmpty', label: 'is not empty' }
+			];
+		} else if (property === 'due' || property === 'created' || property === 'modified') {
+			// Date operators
+			operators = [
+				{ value: 'before', label: 'before' },
+				{ value: 'after', label: 'after' },
+				{ value: 'between', label: 'between' },
+				{ value: 'isEmpty', label: 'is not set' },
+				{ value: 'isNotEmpty', label: 'is set' }
+			];
+		}
+
+		operators.forEach(op => {
+			const option = select.createEl('option', { value: op.value, text: op.label });
+			if (currentOperator === op.value) option.selected = true;
+		});
+	}
+
+	/**
+	 * Render value input based on property and operator
+	 */
+	private renderFilterValue(container: HTMLElement, rule: FilterRule): void {
+		container.empty();
+
+		// No value needed for isEmpty/isNotEmpty
+		if (rule.operator === 'isEmpty' || rule.operator === 'isNotEmpty') {
+			return;
+		}
+
+		if (rule.property === 'title' || rule.property === 'id') {
+			// Text input
+			const input = container.createEl('input', {
+				type: 'text',
+				placeholder: 'Enter text...',
+				cls: 'convergent-table-filter-input'
+			});
+			input.value = (rule.value as string) || '';
+			input.addEventListener('input', (e) => {
+				rule.value = (e.target as HTMLInputElement).value;
+				this.renderTable();
+			});
+		} else if (rule.property === 'status') {
+			// Status multi-select
+			this.renderStatusMultiSelect(container, rule);
+		} else if (rule.property === 'priority') {
+			// Priority multi-select
+			this.renderPriorityMultiSelect(container, rule);
+		} else if (rule.property === 'labels') {
+			// Labels input (comma-separated for now)
+			const input = container.createEl('input', {
+				type: 'text',
+				placeholder: 'label1, label2...',
+				cls: 'convergent-table-filter-input'
+			});
+			const values = Array.isArray(rule.value) ? rule.value : [];
+			input.value = values.join(', ');
+			input.addEventListener('input', (e) => {
+				const val = (e.target as HTMLInputElement).value;
+				rule.value = val.split(',').map(v => v.trim()).filter(v => v.length > 0);
+				this.renderTable();
+			});
+		} else if (rule.property === 'due' || rule.property === 'created' || rule.property === 'modified') {
+			// Date input
+			if (rule.operator === 'between') {
+				const rangeContainer = container.createDiv('convergent-table-filter-date-range');
+				const startInput = rangeContainer.createEl('input', { type: 'date', cls: 'convergent-table-filter-input' });
+				rangeContainer.createSpan({ text: ' to ' });
+				const endInput = rangeContainer.createEl('input', { type: 'date', cls: 'convergent-table-filter-input' });
+
+				const range = typeof rule.value === 'object' ? rule.value as { start?: string; end?: string } : {};
+				startInput.value = range.start || '';
+				endInput.value = range.end || '';
+
+				startInput.addEventListener('change', (e) => {
+					const val = typeof rule.value === 'object' ? rule.value : {};
+					rule.value = { ...(val as any), start: (e.target as HTMLInputElement).value };
+					this.renderTable();
+				});
+
+				endInput.addEventListener('change', (e) => {
+					const val = typeof rule.value === 'object' ? rule.value : {};
+					rule.value = { ...(val as any), end: (e.target as HTMLInputElement).value };
+					this.renderTable();
+				});
+			} else {
+				// Single date
+				const input = container.createEl('input', { type: 'date', cls: 'convergent-table-filter-input' });
+				input.value = (rule.value as string) || '';
+				input.addEventListener('change', (e) => {
+					rule.value = (e.target as HTMLInputElement).value;
+					this.renderTable();
+				});
+			}
+		}
+	}
+
+	/**
+	 * Render status multi-select
+	 */
+	private renderStatusMultiSelect(container: HTMLElement, rule: FilterRule): void {
+		const statuses: IssueStatus[] = ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done', 'Canceled'];
+		const selectedValues = Array.isArray(rule.value) ? rule.value : [];
+
+		const checkboxContainer = container.createDiv('convergent-table-filter-checkboxes');
+
+		statuses.forEach(status => {
+			const row = checkboxContainer.createDiv('convergent-table-filter-checkbox-row');
+			const checkbox = row.createEl('input', { type: 'checkbox' });
+			checkbox.checked = selectedValues.includes(status);
+			checkbox.addEventListener('change', (e) => {
+				const checked = (e.target as HTMLInputElement).checked;
+				let values = Array.isArray(rule.value) ? [...rule.value] : [];
+				if (checked) {
+					if (!values.includes(status)) values.push(status);
+				} else {
+					values = values.filter(v => v !== status);
+				}
+				rule.value = values;
+				this.renderTable();
+			});
+			row.createSpan({ text: status });
+		});
+	}
+
+	/**
+	 * Render priority multi-select
+	 */
+	private renderPriorityMultiSelect(container: HTMLElement, rule: FilterRule): void {
+		const priorities: IssuePriority[] = ['Urgent', 'High', 'Medium', 'Low'];
+		const selectedValues = Array.isArray(rule.value) ? rule.value : [];
+
+		const checkboxContainer = container.createDiv('convergent-table-filter-checkboxes');
+
+		priorities.forEach(priority => {
+			const row = checkboxContainer.createDiv('convergent-table-filter-checkbox-row');
+			const checkbox = row.createEl('input', { type: 'checkbox' });
+			checkbox.checked = selectedValues.includes(priority);
+			checkbox.addEventListener('change', (e) => {
+				const checked = (e.target as HTMLInputElement).checked;
+				let values = Array.isArray(rule.value) ? [...rule.value] : [];
+				if (checked) {
+					if (!values.includes(priority)) values.push(priority);
+				} else {
+					values = values.filter(v => v !== priority);
+				}
+				rule.value = values;
+				this.renderTable();
+			});
+			row.createSpan({ text: priority });
+		});
+	}
+
+	/**
+	 * Add a new filter rule
+	 */
+	private addFilterRule(): void {
+		const newRule: FilterRule = {
+			id: Date.now().toString(),
+			property: 'title',
+			operator: 'contains',
+			value: '',
+			combineWith: this.filterRules.length > 0 ? 'AND' : undefined
+		};
+		this.filterRules.push(newRule);
+		this.renderTable();
+	}
+
+	/**
+	 * Apply filter rules to issues
+	 */
+	private applyFilters(issues: Issue[]): Issue[] {
+		if (this.filterRules.length === 0) {
+			return issues;
+		}
+
+		return issues.filter(issue => {
+			let result = true;
+			let lastCombine: 'AND' | 'OR' | undefined = undefined;
+
+			for (const rule of this.filterRules) {
+				const ruleResult = this.evaluateFilterRule(issue, rule);
+
+				if (lastCombine === 'OR') {
+					result = result || ruleResult;
+				} else {
+					// AND or first rule
+					result = result && ruleResult;
+				}
+
+				lastCombine = rule.combineWith;
+			}
+
+			return result;
+		});
+	}
+
+	/**
+	 * Evaluate a single filter rule against an issue
+	 */
+	private evaluateFilterRule(issue: Issue, rule: FilterRule): boolean {
+		const { property, operator, value } = rule;
+
+		// Get property value
+		let propValue: any = issue[property as keyof Issue];
+
+		// Handle isEmpty/isNotEmpty
+		if (operator === 'isEmpty') {
+			return !propValue || (Array.isArray(propValue) && propValue.length === 0) || propValue === '';
+		}
+		if (operator === 'isNotEmpty') {
+			return !!propValue && (!Array.isArray(propValue) || propValue.length > 0) && propValue !== '';
+		}
+
+		// Text operators
+		if (property === 'title' || property === 'id') {
+			const text = (propValue || '').toLowerCase();
+			const searchText = (value as string || '').toLowerCase();
+
+			if (operator === 'contains') return text.includes(searchText);
+			if (operator === 'equals') return text === searchText;
+			if (operator === 'startsWith') return text.startsWith(searchText);
+		}
+
+		// Multi-select operators (status, priority, labels)
+		if (operator === 'in' && Array.isArray(value)) {
+			if (property === 'labels') {
+				// Check if any label matches
+				const issueLabels = issue.labels || [];
+				return value.some(v => issueLabels.includes(v));
+			} else {
+				// Direct match
+				return value.includes(propValue);
+			}
+		}
+
+		// Date operators
+		if (property === 'due' || property === 'created' || property === 'modified') {
+			if (!propValue) return false;
+
+			const dateValue = new Date(propValue).getTime();
+
+			if (operator === 'before') {
+				const compareDate = new Date(value as string).getTime();
+				return dateValue < compareDate;
+			}
+			if (operator === 'after') {
+				const compareDate = new Date(value as string).getTime();
+				return dateValue > compareDate;
+			}
+			if (operator === 'between' && typeof value === 'object') {
+				const range = value as { start?: string; end?: string };
+				if (!range.start || !range.end) return true;
+				const startDate = new Date(range.start).getTime();
+				const endDate = new Date(range.end).getTime();
+				return dateValue >= startDate && dateValue <= endDate;
+			}
+		}
+
+		return true;
 	}
 
 	/**

@@ -1380,3 +1380,289 @@
 .convergent-table-clear-sort-btn:hover {
 	background-color: var(--background-modifier-hover);
 }
+
+/* =============================================
+   TABLE FILTERING STYLES (Week 5 Day 3)
+   ============================================= */
+
+/* Filter Button */
+.convergent-table-filters-btn {
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	cursor: pointer;
+	transition: all 0.15s;
+	margin-right: 8px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.convergent-table-filters-btn:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.convergent-table-filters-count {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 6px;
+	border-radius: 10px;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	font-size: 0.75em;
+	font-weight: bold;
+}
+
+/* Filters Dropdown */
+.convergent-table-filters-dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 8px;
+	min-width: 400px;
+	max-width: 600px;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 100;
+	padding: 12px;
+	max-height: 500px;
+	overflow-y: auto;
+}
+
+.convergent-table-filters-section {
+	margin-bottom: 16px;
+}
+
+.convergent-table-filters-section:last-child {
+	margin-bottom: 0;
+}
+
+.convergent-table-filters-section h5 {
+	margin: 0 0 8px 0;
+	font-size: 0.9em;
+	font-weight: 600;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+/* Filter Rules Container */
+.convergent-table-filters-rules {
+	margin-bottom: 12px;
+}
+
+.convergent-table-filters-empty {
+	color: var(--text-muted);
+	font-style: italic;
+	font-size: 0.9em;
+	padding: 8px;
+	text-align: center;
+}
+
+/* Individual Filter Rule */
+.convergent-table-filter-rule {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 12px;
+	background-color: var(--background-secondary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	margin-bottom: 8px;
+	transition: all 0.15s;
+}
+
+.convergent-table-filter-rule:hover {
+	border-color: var(--interactive-accent);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* AND/OR Toggle */
+.convergent-table-filter-combine {
+	display: flex;
+	gap: 4px;
+	margin-bottom: 4px;
+}
+
+.convergent-table-filter-combine button {
+	padding: 4px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-muted);
+	font-size: 0.8em;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.convergent-table-filter-combine button:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.convergent-table-filter-combine button.active {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+/* Filter Rule Inputs */
+.convergent-table-filter-property,
+.convergent-table-filter-operator,
+.convergent-table-filter-input {
+	padding: 6px 10px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+}
+
+.convergent-table-filter-property:focus,
+.convergent-table-filter-operator:focus,
+.convergent-table-filter-input:focus {
+	outline: none;
+	border-color: var(--interactive-accent);
+	box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.convergent-table-filter-property {
+	flex: 1;
+}
+
+.convergent-table-filter-operator {
+	flex: 1;
+}
+
+/* Filter Value Container */
+.convergent-table-filter-value {
+	flex: 2;
+}
+
+.convergent-table-filter-value input[type="text"],
+.convergent-table-filter-value input[type="date"] {
+	width: 100%;
+}
+
+/* Date Range Input */
+.convergent-table-filter-date-range {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.convergent-table-filter-date-range input {
+	flex: 1;
+}
+
+.convergent-table-filter-date-range span {
+	color: var(--text-muted);
+	font-size: 0.9em;
+}
+
+/* Checkboxes */
+.convergent-table-filter-checkboxes {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.convergent-table-filter-checkbox-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 4px;
+	cursor: pointer;
+	border-radius: 3px;
+	transition: background-color 0.15s;
+}
+
+.convergent-table-filter-checkbox-row:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.convergent-table-filter-checkbox-row input[type="checkbox"] {
+	cursor: pointer;
+}
+
+.convergent-table-filter-checkbox-row span {
+	font-size: 0.9em;
+}
+
+/* Remove Button */
+.convergent-table-filter-remove-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 50%;
+	background-color: var(--background-primary);
+	color: var(--text-muted);
+	font-size: 1em;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.convergent-table-filter-remove-btn:hover {
+	background-color: var(--color-red);
+	color: white;
+	border-color: var(--color-red);
+}
+
+/* Make rule container relative for absolute positioning */
+.convergent-table-filter-rule {
+	position: relative;
+}
+
+/* Add Filter Button */
+.convergent-table-filters-add-btn {
+	width: 100%;
+	padding: 8px 16px;
+	border: 1px dashed var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.convergent-table-filters-add-btn:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+	border-style: solid;
+}
+
+/* Clear All Filters Button */
+.convergent-table-filters-clear-btn {
+	width: 100%;
+	padding: 8px 16px;
+	border: 1px solid var(--color-red);
+	border-radius: 4px;
+	background-color: var(--background-primary);
+	color: var(--color-red);
+	font-size: 0.9em;
+	cursor: pointer;
+	transition: all 0.15s;
+	margin-top: 8px;
+}
+
+.convergent-table-filters-clear-btn:hover {
+	background-color: var(--color-red);
+	color: white;
+}
