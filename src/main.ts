@@ -8,6 +8,7 @@ import { RelationshipCommands } from './commands/relationship-commands';
 import { FrontmatterUtils } from './utils/frontmatter';
 import { RelationshipUtils } from './utils/relationships';
 import { KanbanView, KANBAN_VIEW_TYPE } from './views/kanban-view';
+import { TableView, TABLE_VIEW_TYPE } from './views/table-view';
 
 export default class ConvergentPlugin extends Plugin {
 	settings: ConvergentSettings;
@@ -33,6 +34,10 @@ export default class ConvergentPlugin extends Plugin {
 			KANBAN_VIEW_TYPE,
 			(leaf) => new KanbanView(leaf, this)
 		);
+		this.registerView(
+			TABLE_VIEW_TYPE,
+			(leaf) => new TableView(leaf, this)
+		);
 
 		// Initialize command handlers
 		this.issueCommands = new IssueCommands(this.app, this, this.frontmatterUtils);
@@ -46,9 +51,12 @@ export default class ConvergentPlugin extends Plugin {
 		// Register event handlers
 		this.registerEventHandlers();
 
-		// Add ribbon icon for Kanban view
+		// Add ribbon icons
 		this.addRibbonIcon('layout-dashboard', 'Open Kanban Board', () => {
 			this.activateKanbanView();
+		});
+		this.addRibbonIcon('table', 'Open Issue Table', () => {
+			this.activateTableView();
 		});
 
 		// Add settings tab
@@ -88,6 +96,13 @@ export default class ConvergentPlugin extends Plugin {
 			id: 'open-kanban-board',
 			name: 'Open Kanban board',
 			callback: () => this.activateKanbanView()
+		});
+
+		// Open Table view
+		this.addCommand({
+			id: 'open-issue-table',
+			name: 'Open issue table',
+			callback: () => this.activateTableView()
 		});
 
 		// Start session (MSP)
@@ -133,6 +148,30 @@ export default class ConvergentPlugin extends Plugin {
 			if (rightLeaf) {
 				await rightLeaf.setViewState({
 					type: KANBAN_VIEW_TYPE,
+					active: true
+				});
+				leaf = rightLeaf;
+			}
+		}
+
+		// Reveal the leaf
+		if (leaf) {
+			workspace.revealLeaf(leaf);
+		}
+	}
+
+	async activateTableView() {
+		const { workspace } = this.app;
+
+		// Check if view is already open
+		let leaf = workspace.getLeavesOfType(TABLE_VIEW_TYPE)[0];
+
+		if (!leaf) {
+			// Open in right sidebar
+			const rightLeaf = workspace.getRightLeaf(false);
+			if (rightLeaf) {
+				await rightLeaf.setViewState({
+					type: TABLE_VIEW_TYPE,
 					active: true
 				});
 				leaf = rightLeaf;

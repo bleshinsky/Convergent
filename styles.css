@@ -909,3 +909,309 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
+
+/* =============================================
+   TABLE VIEW STYLES
+   ============================================= */
+
+/* Table View Container */
+.convergent-table-view {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: hidden;
+	background-color: var(--background-primary);
+}
+
+/* Table Header */
+.convergent-table-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 16px 20px;
+	border-bottom: 1px solid var(--background-modifier-border);
+	flex-shrink: 0;
+}
+
+.convergent-table-header h4 {
+	margin: 0;
+	font-size: 1.3em;
+	font-weight: 600;
+}
+
+.convergent-table-count {
+	margin-left: 12px;
+	color: var(--text-muted);
+	font-size: 0.9em;
+	font-weight: 400;
+}
+
+/* Table Container (Scrollable) */
+.convergent-table-container {
+	flex: 1;
+	overflow: auto;
+	position: relative;
+}
+
+/* Table */
+.convergent-table {
+	width: 100%;
+	border-collapse: collapse;
+	background-color: var(--background-primary);
+}
+
+/* Table Header Row */
+.convergent-table thead {
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	background-color: var(--background-secondary);
+	border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.convergent-table th {
+	padding: 12px 16px;
+	text-align: left;
+	font-weight: 600;
+	font-size: 0.9em;
+	color: var(--text-muted);
+	border-bottom: 2px solid var(--background-modifier-border);
+	background-color: var(--background-secondary);
+	white-space: nowrap;
+}
+
+.convergent-table-header-content {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.convergent-table-column-label {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.convergent-table-column-icon {
+	font-size: 1.1em;
+	font-weight: bold;
+}
+
+/* Table Body */
+.convergent-table tbody tr {
+	border-bottom: 1px solid var(--background-modifier-border);
+	transition: background-color 0.15s;
+}
+
+/* Striped rows */
+.convergent-table tbody tr:nth-child(even) {
+	background-color: var(--background-secondary);
+}
+
+/* Hover effect */
+.convergent-table tbody tr:hover {
+	background-color: var(--background-modifier-hover);
+	cursor: pointer;
+}
+
+/* Table Cells */
+.convergent-table td {
+	padding: 12px 16px;
+	vertical-align: middle;
+	font-size: 0.9em;
+}
+
+/* ID Column */
+.convergent-table-cell-id {
+	font-family: var(--font-monospace);
+	font-size: 0.85em;
+	color: var(--text-muted);
+	font-weight: 500;
+}
+
+/* Title Column */
+.convergent-table-cell-title {
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* Status Badge */
+.convergent-table-status {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: 12px;
+	font-size: 0.85em;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.convergent-table-status-icon {
+	font-size: 1.1em;
+	font-weight: bold;
+}
+
+.convergent-table-status-text {
+	font-size: 0.9em;
+}
+
+/* Status colors */
+.convergent-table-status-backlog {
+	background-color: var(--background-modifier-border);
+	color: var(--text-muted);
+}
+
+.convergent-table-status-todo {
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+}
+
+.convergent-table-status-in-progress {
+	background-color: var(--color-orange);
+	color: white;
+}
+
+.convergent-table-status-in-review {
+	background-color: var(--color-purple);
+	color: white;
+}
+
+.convergent-table-status-done {
+	background-color: var(--color-green);
+	color: white;
+}
+
+.convergent-table-status-canceled {
+	background-color: var(--background-modifier-border);
+	color: var(--text-muted);
+	text-decoration: line-through;
+}
+
+/* Priority Badge */
+.convergent-table-priority {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: 12px;
+	font-size: 0.85em;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.convergent-table-priority-icon {
+	font-size: 1.1em;
+	font-weight: bold;
+}
+
+.convergent-table-priority-text {
+	font-size: 0.9em;
+}
+
+/* Priority colors */
+.convergent-table-priority-low {
+	color: var(--text-muted);
+	background-color: var(--background-secondary);
+}
+
+.convergent-table-priority-medium {
+	color: var(--color-blue);
+	background-color: var(--background-secondary);
+}
+
+.convergent-table-priority-high {
+	color: var(--color-orange);
+	background-color: rgba(var(--color-orange-rgb), 0.1);
+}
+
+.convergent-table-priority-urgent {
+	color: var(--color-red);
+	background-color: rgba(var(--color-red-rgb), 0.1);
+	font-weight: bold;
+}
+
+/* Labels */
+.convergent-table-labels {
+	display: flex;
+	gap: 4px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.convergent-table-label {
+	display: inline-block;
+	padding: 2px 8px;
+	border-radius: 10px;
+	background-color: var(--background-modifier-border);
+	color: var(--text-normal);
+	font-size: 0.75em;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.convergent-table-label-overflow {
+	display: inline-block;
+	padding: 2px 6px;
+	color: var(--text-muted);
+	font-size: 0.75em;
+	font-style: italic;
+}
+
+/* Due Date */
+.convergent-table-due {
+	font-size: 0.85em;
+	white-space: nowrap;
+}
+
+.convergent-table-due-soon {
+	color: var(--color-yellow);
+	font-weight: 500;
+}
+
+.convergent-table-due-urgent {
+	color: var(--color-red);
+	font-weight: bold;
+}
+
+.convergent-table-due-overdue {
+	color: var(--color-red);
+	font-weight: bold;
+	text-decoration: underline;
+}
+
+/* Updated (Modified) Column */
+.convergent-table-cell-time {
+	color: var(--text-muted);
+	font-size: 0.85em;
+	white-space: nowrap;
+}
+
+/* Empty State */
+.convergent-table-empty {
+	text-align: center;
+	color: var(--text-muted);
+	font-style: italic;
+	padding: 40px 20px;
+}
+
+/* Scrollbar Styling */
+.convergent-table-container::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+.convergent-table-container::-webkit-scrollbar-track {
+	background-color: var(--background-primary);
+}
+
+.convergent-table-container::-webkit-scrollbar-thumb {
+	background-color: var(--background-modifier-border);
+	border-radius: 5px;
+}
+
+.convergent-table-container::-webkit-scrollbar-thumb:hover {
+	background-color: var(--background-modifier-border-hover);
+}
