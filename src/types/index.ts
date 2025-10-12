@@ -3,6 +3,14 @@ import { TFile } from 'obsidian';
 // Core entity types
 export type EntityType = 'issue' | 'project' | 'session' | 'decision' | 'blocker';
 
+// Relationship types
+export type RelationType =
+	| 'parent'
+	| 'child'
+	| 'blocks'
+	| 'blocked-by'
+	| 'related';
+
 // Issue types
 export type IssueStatus =
 	| 'Backlog'
