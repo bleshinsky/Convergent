@@ -1,3 +1,7 @@
+import { TFile } from 'obsidian';
+import type { Issue } from './Issue';
+import type { Project } from './Project';
+
 // Re-export all types from separate files
 export type {
 	Issue,

@@ -66,13 +66,13 @@ export class QuickSwitcherModal extends Modal {
 		this.createFilterButton(filterContainer, 'Status', this.statusFilter, (value) => {
 			this.statusFilter = value as IssueStatus | 'all';
 			this.filterIssues();
-		}, ['all', 'Backlog', 'Todo', 'In Progress', 'In Review', 'Done', 'Canceled']);
+		}, ['all', 'Backlog', 'Triage', 'Todo', 'In Progress', 'Done', 'Canceled']);
 
 		// Priority filter
 		this.createFilterButton(filterContainer, 'Priority', this.priorityFilter, (value) => {
 			this.priorityFilter = value as IssuePriority | 'all';
 			this.filterIssues();
-		}, ['all', 'Low', 'Medium', 'High', 'Urgent']);
+		}, ['all', 'No Priority', 'Low', 'Medium', 'High', 'Urgent']);
 
 		// Recent toggle
 		const recentBtn = filterContainer.createEl('button', {
@@ -333,9 +333,9 @@ export class QuickSwitcherModal extends Modal {
 	private getStatusIcon(status: IssueStatus): string {
 		const icons: Record<IssueStatus, string> = {
 			'Backlog': '○',
+			'Triage': '⚡',
 			'Todo': '◯',
 			'In Progress': '◐',
-			'In Review': '◑',
 			'Done': '●',
 			'Canceled': '✕'
 		};
@@ -344,6 +344,7 @@ export class QuickSwitcherModal extends Modal {
 
 	private getPriorityIcon(priority: IssuePriority): string {
 		const icons: Record<IssuePriority, string> = {
+			'No Priority': '○',
 			'Low': '⬇',
 			'Medium': '→',
 			'High': '⬆',

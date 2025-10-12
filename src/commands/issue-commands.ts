@@ -131,7 +131,8 @@ export class IssueCommands {
 
 		// Add optional fields
 		if (data.project) {
-			frontmatter.project = data.project;
+			// Convert TFile to wikilink
+			frontmatter.project = `[[${data.project.basename}]]`;
 		}
 
 		// Build file content

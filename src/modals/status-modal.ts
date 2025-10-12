@@ -16,9 +16,9 @@ export class StatusModal extends SuggestModal<StatusOption> {
 
 	private statuses: StatusOption[] = [
 		{ status: 'Backlog', label: 'Backlog', icon: '○' },
+		{ status: 'Triage', label: 'Triage', icon: '⚡' },
 		{ status: 'Todo', label: 'Todo', icon: '◯' },
 		{ status: 'In Progress', label: 'In Progress', icon: '◐' },
-		{ status: 'In Review', label: 'In Review', icon: '◑' },
 		{ status: 'Done', label: 'Done', icon: '●' },
 		{ status: 'Canceled', label: 'Canceled', icon: '✕' }
 	];

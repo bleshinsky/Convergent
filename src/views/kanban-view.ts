@@ -280,9 +280,9 @@ export class KanbanView extends ItemView {
 		// Define all statuses
 		const statuses: IssueStatus[] = [
 			'Backlog',
+			'Triage',
 			'Todo',
 			'In Progress',
-			'In Review',
 			'Done',
 			'Canceled'
 		];
@@ -553,9 +553,9 @@ export class KanbanView extends ItemView {
 	private getStatusIcon(status: IssueStatus): string {
 		const icons: Record<IssueStatus, string> = {
 			'Backlog': '○',
+			'Triage': '⚡',
 			'Todo': '◯',
 			'In Progress': '◐',
-			'In Review': '◑',
 			'Done': '●',
 			'Canceled': '✕'
 		};

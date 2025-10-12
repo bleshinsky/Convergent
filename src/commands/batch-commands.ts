@@ -222,7 +222,7 @@ export class BatchCommands {
  */
 class BatchStatusModal extends SuggestModal<IssueStatus> {
 	private onSubmit: (status: IssueStatus) => void;
-	private statuses: IssueStatus[] = ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done', 'Canceled'];
+	private statuses: IssueStatus[] = ['Backlog', 'Triage', 'Todo', 'In Progress', 'Done', 'Canceled'];
 
 	constructor(app: App, onSubmit: (status: IssueStatus) => void) {
 		super(app);
@@ -238,9 +238,9 @@ class BatchStatusModal extends SuggestModal<IssueStatus> {
 	renderSuggestion(status: IssueStatus, el: HTMLElement) {
 		const icons: Record<IssueStatus, string> = {
 			'Backlog': '○',
+			'Triage': '⚡',
 			'Todo': '◯',
 			'In Progress': '◐',
-			'In Review': '◑',
 			'Done': '●',
 			'Canceled': '✕'
 		};
@@ -261,7 +261,7 @@ class BatchStatusModal extends SuggestModal<IssueStatus> {
  */
 class BatchPriorityModal extends SuggestModal<IssuePriority> {
 	private onSubmit: (priority: IssuePriority) => void;
-	private priorities: IssuePriority[] = ['Low', 'Medium', 'High', 'Urgent'];
+	private priorities: IssuePriority[] = ['No Priority', 'Low', 'Medium', 'High', 'Urgent'];
 
 	constructor(app: App, onSubmit: (priority: IssuePriority) => void) {
 		super(app);
@@ -276,6 +276,7 @@ class BatchPriorityModal extends SuggestModal<IssuePriority> {
 
 	renderSuggestion(priority: IssuePriority, el: HTMLElement) {
 		const icons: Record<IssuePriority, string> = {
+			'No Priority': '○',
 			'Low': '⬇',
 			'Medium': '→',
 			'High': '⬆',

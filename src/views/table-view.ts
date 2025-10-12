@@ -955,7 +955,7 @@ export class TableView extends ItemView {
 	 * Render status multi-select
 	 */
 	private renderStatusMultiSelect(container: HTMLElement, rule: FilterRule): void {
-		const statuses: IssueStatus[] = ['Backlog', 'Todo', 'In Progress', 'In Review', 'Done', 'Canceled'];
+		const statuses: IssueStatus[] = ['Backlog', 'Triage', 'Todo', 'In Progress', 'Done', 'Canceled'];
 		const selectedValues = Array.isArray(rule.value) ? rule.value : [];
 
 		const checkboxContainer = container.createDiv('convergent-table-filter-checkboxes');
@@ -983,7 +983,7 @@ export class TableView extends ItemView {
 	 * Render priority multi-select
 	 */
 	private renderPriorityMultiSelect(container: HTMLElement, rule: FilterRule): void {
-		const priorities: IssuePriority[] = ['Urgent', 'High', 'Medium', 'Low'];
+		const priorities: IssuePriority[] = ['No Priority', 'Urgent', 'High', 'Medium', 'Low'];
 		const selectedValues = Array.isArray(rule.value) ? rule.value : [];
 
 		const checkboxContainer = container.createDiv('convergent-table-filter-checkboxes');
@@ -1368,9 +1368,9 @@ export class TableView extends ItemView {
 	private getStatusIcon(status: IssueStatus): string {
 		const icons: Record<IssueStatus, string> = {
 			'Backlog': '○',
+			'Triage': '⚡',
 			'Todo': '◯',
 			'In Progress': '◐',
-			'In Review': '◑',
 			'Done': '●',
 			'Canceled': '✕'
 		};
@@ -1379,6 +1379,7 @@ export class TableView extends ItemView {
 
 	private getPriorityIcon(priority: IssuePriority): string {
 		const icons: Record<IssuePriority, string> = {
+			'No Priority': '○',
 			'Urgent': '🔥',
 			'High': '⬆',
 			'Medium': '→',
@@ -1507,12 +1508,12 @@ export class TableView extends ItemView {
 				break;
 
 			case 'status':
-				// Status order: Backlog → Todo → In Progress → In Review → Done → Canceled
+				// Status order: Backlog → Triage → Todo → In Progress → Done → Canceled
 				const statusOrder: Record<IssueStatus, number> = {
 					'Backlog': 0,
-					'Todo': 1,
-					'In Progress': 2,
-					'In Review': 3,
+					'Triage': 1,
+					'Todo': 2,
+					'In Progress': 3,
 					'Done': 4,
 					'Canceled': 5
 				};

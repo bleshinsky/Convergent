@@ -51,6 +51,9 @@ export interface Project {
 
 	// External resources
 	links?: ProjectLink[];
+
+	// Runtime properties (not stored in frontmatter)
+	file?: TFile; // The Obsidian TFile object for this project
 }
 
 /**

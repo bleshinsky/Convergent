@@ -239,19 +239,29 @@ export class RelationshipUtils {
 	hasRelationship(issue: Issue, type: RelationType, target: TFile): boolean {
 		switch (type) {
 			case 'parent':
-				return issue.parent?.path === target.path;
+				if (!issue.parent) return false;
+				const parentFile = this.resolveLink(this.parseWikilinks(issue.parent)[0]);
+				return parentFile?.path === target.path;
 
 			case 'child':
-				return issue.subIssues?.some(child => child.path === target.path) || false;
+				if (!issue.subIssues || issue.subIssues.length === 0) return false;
+				const childFiles = this.resolveLinks(issue.subIssues);
+				return childFiles.some(child => child.path === target.path);
 
 			case 'blocks':
-				return issue.blocks?.some(blocked => blocked.path === target.path) || false;
+				if (!issue.blocks || issue.blocks.length === 0) return false;
+				const blockedFiles = this.resolveLinks(issue.blocks);
+				return blockedFiles.some(blocked => blocked.path === target.path);
 
 			case 'blocked-by':
-				return issue.blockedBy?.some(blocker => blocker.path === target.path) || false;
+				if (!issue.blockedBy || issue.blockedBy.length === 0) return false;
+				const blockerFiles = this.resolveLinks(issue.blockedBy);
+				return blockerFiles.some(blocker => blocker.path === target.path);
 
 			case 'related':
-				return issue.related?.some(rel => rel.path === target.path) || false;
+				if (!issue.related || issue.related.length === 0) return false;
+				const relatedFiles = this.resolveLinks(issue.related);
+				return relatedFiles.some(rel => rel.path === target.path);
 
 			default:
 				return false;
@@ -267,19 +277,25 @@ export class RelationshipUtils {
 	getRelatedFiles(issue: Issue, type: RelationType): TFile[] {
 		switch (type) {
 			case 'parent':
-				return issue.parent ? [issue.parent] : [];
+				if (!issue.parent) return [];
+				const parentFile = this.resolveLink(this.parseWikilinks(issue.parent)[0]);
+				return parentFile ? [parentFile] : [];
 
 			case 'child':
-				return issue.subIssues || [];
+				if (!issue.subIssues || issue.subIssues.length === 0) return [];
+				return this.resolveLinks(issue.subIssues);
 
 			case 'blocks':
-				return issue.blocks || [];
+				if (!issue.blocks || issue.blocks.length === 0) return [];
+				return this.resolveLinks(issue.blocks);
 
 			case 'blocked-by':
-				return issue.blockedBy || [];
+				if (!issue.blockedBy || issue.blockedBy.length === 0) return [];
+				return this.resolveLinks(issue.blockedBy);
 
 			case 'related':
-				return issue.related || [];
+				if (!issue.related || issue.related.length === 0) return [];
+				return this.resolveLinks(issue.related);
 
 			default:
 				return [];

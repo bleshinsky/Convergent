@@ -83,7 +83,16 @@ export class FileOperations {
 			parent: input.parent,
 			progress: input.progress || 0,
 			assignee: 'me',
-			...input
+			subIssues: input.subIssues,
+			blockedBy: input.blockedBy,
+			blocks: input.blocks,
+			related: input.related,
+			recurring: input.recurring,
+			template: input.template,
+			session: input.session,
+			decisions: input.decisions,
+			acceptanceCriteria: input.acceptanceCriteria,
+			notes: input.notes
 		};
 
 		// Generate filename
@@ -123,13 +132,18 @@ export class FileOperations {
 			status: input.status || DEFAULT_PROJECT_STATUS,
 			lead: input.lead || DEFAULT_LEAD,
 			created: now,
+			target: input.target,
+			start: input.start,
 			icon: input.icon || '📁',
 			description: input.description,
 			labels: input.labels || [],
 			progress: 0,
 			totalIssues: 0,
 			completedIssues: 0,
-			...input
+			milestones: input.milestones,
+			sessions: input.sessions,
+			documents: input.documents,
+			links: input.links
 		};
 
 		// Generate filename
