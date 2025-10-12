@@ -147,6 +147,35 @@ export class KanbanView extends ItemView {
 		column.className = 'kanban-column';
 		column.dataset.status = status;
 
+		// Make column a drop target
+		// Drag over - allow drop
+		column.addEventListener('dragover', (e) => {
+			e.preventDefault();
+			if (e.dataTransfer) {
+				e.dataTransfer.dropEffect = 'move';
+			}
+			column.addClass('drag-over');
+		});
+
+		// Drag leave - remove highlight
+		column.addEventListener('dragleave', (e) => {
+			// Only remove if leaving the column itself, not a child
+			if (e.target === column) {
+				column.removeClass('drag-over');
+			}
+		});
+
+		// Drop - handle the drop
+		column.addEventListener('drop', async (e) => {
+			e.preventDefault();
+			column.removeClass('drag-over');
+
+			if (e.dataTransfer) {
+				const filePath = e.dataTransfer.getData('text/plain');
+				await this.handleDrop(filePath, status);
+			}
+		});
+
 		// Filter issues for this status
 		const columnIssues = this.allIssues.filter(issue => {
 			// Apply status filter
@@ -224,6 +253,23 @@ export class KanbanView extends ItemView {
 		card.dataset.issueId = issue.id || '';
 		card.dataset.issuePath = issue.file?.path || '';
 
+		// Make card draggable
+		card.draggable = true;
+
+		// Drag start handler
+		card.addEventListener('dragstart', (e) => {
+			if (e.dataTransfer && issue.file) {
+				e.dataTransfer.effectAllowed = 'move';
+				e.dataTransfer.setData('text/plain', issue.file.path);
+				card.addClass('dragging');
+			}
+		});
+
+		// Drag end handler
+		card.addEventListener('dragend', (e) => {
+			card.removeClass('dragging');
+		});
+
 		// Card header with priority and ID
 		const cardHeader = card.createDiv('kanban-card-header');
 
@@ -296,6 +342,54 @@ export class KanbanView extends ItemView {
 			await this.loadIssues();
 			this.renderBoard();
 		}, 1000);
+	}
+
+	/**
+	 * Handle drop event - update issue status
+	 */
+	private async handleDrop(filePath: string, newStatus: IssueStatus): Promise<void> {
+		try {
+			// Get file
+			const file = this.app.vault.getAbstractFileByPath(filePath);
+			if (!(file instanceof TFile)) {
+				console.error('Dropped item is not a file');
+				return;
+			}
+
+			// Get issue frontmatter
+			const frontmatter = await this.plugin.frontmatterUtils.getFrontmatter(file);
+			if (!frontmatter || frontmatter.type !== 'issue') {
+				console.error('Dropped file is not an issue');
+				return;
+			}
+
+			const issue = frontmatter as Issue;
+			const oldStatus = issue.status;
+
+			// Check if status actually changed
+			if (oldStatus === newStatus) {
+				console.log('Status unchanged, no update needed');
+				return;
+			}
+
+			// Update frontmatter
+			await this.plugin.frontmatterUtils.updateFrontmatter(file, {
+				status: newStatus,
+				modified: new Date().toISOString()
+			});
+
+			// Show success notice
+			new Notice(`Moved ${issue.id || file.basename} from ${oldStatus} to ${newStatus}`);
+
+			// Refresh board to show changes
+			await this.loadIssues();
+			this.renderBoard();
+
+			console.log(`Successfully moved issue from ${oldStatus} to ${newStatus}`);
+		} catch (error) {
+			console.error('Error handling drop:', error);
+			new Notice('Failed to update issue status');
+		}
 	}
 
 	/**

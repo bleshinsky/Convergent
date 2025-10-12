@@ -127,6 +127,12 @@
 	background-color: var(--background-secondary);
 	border-radius: 8px;
 	max-height: 100%;
+	transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.kanban-column.drag-over {
+	background-color: var(--background-secondary-alt);
+	box-shadow: 0 0 0 2px var(--interactive-accent);
 }
 
 .kanban-column-header {
@@ -229,13 +235,19 @@
 	border-radius: 6px;
 	padding: 12px;
 	margin-bottom: 8px;
-	cursor: pointer;
+	cursor: move;
 	transition: all 0.15s;
 }
 
 .kanban-card:hover {
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	transform: translateY(-1px);
+}
+
+.kanban-card.dragging {
+	opacity: 0.5;
+	transform: rotate(2deg);
+	cursor: grabbing;
 }
 
 .kanban-card-header {
