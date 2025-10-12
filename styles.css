@@ -1215,3 +1215,168 @@
 .convergent-table-container::-webkit-scrollbar-thumb:hover {
 	background-color: var(--background-modifier-border-hover);
 }
+
+/* =============================================
+   TABLE SORTING STYLES (Week 5 Day 2)
+   ============================================= */
+
+/* Header Layout */
+.convergent-table-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.convergent-table-header-left {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.convergent-table-header-right {
+	position: relative;
+}
+
+/* Sortable Column Headers */
+.convergent-table-sortable {
+	cursor: pointer;
+	user-select: none;
+	transition: background-color 0.15s;
+}
+
+.convergent-table-sortable:hover {
+	background-color: var(--background-modifier-hover) !important;
+}
+
+/* Sort Indicator */
+.convergent-table-sort-indicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-left: 6px;
+}
+
+.convergent-table-sort-arrow {
+	font-size: 1em;
+	font-weight: bold;
+	color: var(--interactive-accent);
+}
+
+.convergent-table-sort-level {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: 50%;
+	background-color: var(--interactive-accent);
+	color: var(--text-on-accent);
+	font-size: 0.75em;
+	font-weight: bold;
+}
+
+/* Column Settings Button */
+.convergent-table-settings-btn {
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.convergent-table-settings-btn:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+/* Settings Dropdown */
+.convergent-table-settings-dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 8px;
+	min-width: 200px;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 100;
+	padding: 12px;
+}
+
+.convergent-table-settings-section {
+	margin-bottom: 16px;
+}
+
+.convergent-table-settings-section:last-child {
+	margin-bottom: 0;
+}
+
+.convergent-table-settings-section h5 {
+	margin: 0 0 8px 0;
+	font-size: 0.9em;
+	font-weight: 600;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+/* Settings Row */
+.convergent-table-settings-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 4px;
+	cursor: pointer;
+	transition: background-color 0.15s;
+	border-radius: 3px;
+}
+
+.convergent-table-settings-row:hover {
+	background-color: var(--background-modifier-hover);
+}
+
+.convergent-table-settings-row input[type="checkbox"] {
+	cursor: pointer;
+}
+
+.convergent-table-settings-row span {
+	flex: 1;
+	font-size: 0.9em;
+}
+
+/* Settings Buttons */
+.convergent-table-settings-buttons {
+	display: flex;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.convergent-table-settings-action-btn {
+	flex: 1;
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--interactive-normal);
+	color: var(--text-normal);
+	font-size: 0.85em;
+	cursor: pointer;
+	transition: all 0.15s;
+}
+
+.convergent-table-settings-action-btn:hover {
+	background-color: var(--interactive-hover);
+	border-color: var(--interactive-accent);
+}
+
+.convergent-table-clear-sort-btn {
+	width: 100%;
+	background-color: var(--background-secondary);
+}
+
+.convergent-table-clear-sort-btn:hover {
+	background-color: var(--background-modifier-hover);
+}
