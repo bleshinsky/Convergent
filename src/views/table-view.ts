@@ -151,10 +151,11 @@ export class TableView extends ItemView {
 			cls: 'convergent-table-count'
 		});
 
-		// Right side - search, filters, and column settings
+		// Right side - search, filters, export, and column settings
 		const headerRight = header.createDiv('convergent-table-header-right');
 		this.renderSearch(headerRight);
 		this.renderFilters(headerRight);
+		this.renderExport(headerRight);
 		this.renderColumnSettings(headerRight);
 
 		// Apply filters → sort → search → paginate
@@ -165,7 +166,13 @@ export class TableView extends ItemView {
 
 		// Table container (scrollable)
 		const tableContainer = container.createDiv('convergent-table-container');
-		const table = tableContainer.createEl('table', { cls: 'convergent-table' });
+		const table = tableContainer.createEl('table', {
+			cls: 'convergent-table',
+			attr: {
+				'role': 'table',
+				'aria-label': 'Issues table'
+			}
+		});
 
 		// Table header
 		const thead = table.createEl('thead');
@@ -256,7 +263,11 @@ export class TableView extends ItemView {
 			type: 'text',
 			placeholder: 'Search issues...',
 			cls: 'convergent-table-search-input',
-			value: this.searchQuery
+			value: this.searchQuery,
+			attr: {
+				'aria-label': 'Search issues',
+				'role': 'searchbox'
+			}
 		});
 
 		// Debounced search
@@ -494,12 +505,194 @@ export class TableView extends ItemView {
 	}
 
 	/**
+	 * Render export dropdown
+	 */
+	private renderExport(container: HTMLElement): void {
+		const exportBtn = container.createEl('button', {
+			cls: 'convergent-table-export-btn',
+			text: '↓ Export',
+			attr: { 'aria-label': 'Export table data' }
+		});
+
+		const dropdown = container.createDiv('convergent-table-export-dropdown');
+		dropdown.style.display = 'none';
+
+		// Export options
+		const options = dropdown.createDiv('convergent-table-export-options');
+
+		// CSV option
+		const csvBtn = options.createEl('button', {
+			text: 'Export as CSV',
+			cls: 'convergent-table-export-option'
+		});
+		csvBtn.addEventListener('click', () => {
+			this.exportToCSV();
+			dropdown.style.display = 'none';
+		});
+
+		// JSON option
+		const jsonBtn = options.createEl('button', {
+			text: 'Export as JSON',
+			cls: 'convergent-table-export-option'
+		});
+		jsonBtn.addEventListener('click', () => {
+			this.exportToJSON();
+			dropdown.style.display = 'none';
+		});
+
+		// Info text
+		const infoText = dropdown.createDiv('convergent-table-export-info');
+		infoText.setText(`Exports ${this.searchedIssues.length} ${this.searchedIssues.length === 1 ? 'issue' : 'issues'} (filtered/searched view)`);
+
+		// Toggle dropdown
+		exportBtn.addEventListener('click', (e) => {
+			e.stopPropagation();
+			const isVisible = dropdown.style.display !== 'none';
+			dropdown.style.display = isVisible ? 'none' : 'block';
+		});
+
+		// Close on outside click
+		document.addEventListener('click', (e) => {
+			if (!container.contains(e.target as Node)) {
+				dropdown.style.display = 'none';
+			}
+		});
+	}
+
+	/**
+	 * Export table data to CSV
+	 */
+	private exportToCSV(): void {
+		try {
+			const csv = this.generateCSV();
+			const timestamp = new Date().toISOString().split('T')[0];
+			const filename = `convergent-issues-${timestamp}.csv`;
+			this.downloadFile(csv, filename, 'text/csv');
+			new Notice(`Exported ${this.searchedIssues.length} issues to CSV`);
+		} catch (error) {
+			console.error('CSV export error:', error);
+			new Notice('Failed to export CSV');
+		}
+	}
+
+	/**
+	 * Export table data to JSON
+	 */
+	private exportToJSON(): void {
+		try {
+			const json = this.generateJSON();
+			const timestamp = new Date().toISOString().split('T')[0];
+			const filename = `convergent-issues-${timestamp}.json`;
+			this.downloadFile(json, filename, 'application/json');
+			new Notice(`Exported ${this.searchedIssues.length} issues to JSON`);
+		} catch (error) {
+			console.error('JSON export error:', error);
+			new Notice('Failed to export JSON');
+		}
+	}
+
+	/**
+	 * Generate CSV from current view
+	 */
+	private generateCSV(): string {
+		// Get visible columns
+		const visibleColumns = this.columns.filter(c => c.visible);
+
+		// Header row
+		const headers = visibleColumns.map(c => this.escapeCSV(c.label)).join(',');
+
+		// Data rows
+		const rows = this.searchedIssues.map(issue => {
+			return visibleColumns.map(column => {
+				const value = this.getCellValue(issue, column.key);
+				return this.escapeCSV(value);
+			}).join(',');
+		});
+
+		return [headers, ...rows].join('\n');
+	}
+
+	/**
+	 * Generate JSON from current view
+	 */
+	private generateJSON(): string {
+		const data = this.searchedIssues.map(issue => {
+			const obj: any = {};
+
+			for (const column of this.columns) {
+				if (!column.visible) continue;
+				obj[column.key] = this.getCellValue(issue, column.key);
+			}
+
+			return obj;
+		});
+
+		return JSON.stringify(data, null, 2);
+	}
+
+	/**
+	 * Get cell value as string
+	 */
+	private getCellValue(issue: Issue, columnKey: string): string {
+		switch (columnKey) {
+			case 'id':
+				return issue.id || '';
+			case 'title':
+				return issue.title || '';
+			case 'status':
+				return issue.status || '';
+			case 'priority':
+				return issue.priority || '';
+			case 'labels':
+				return issue.labels ? issue.labels.join(', ') : '';
+			case 'due':
+				return issue.due ? this.formatDate(issue.due) : '';
+			case 'created':
+				return issue.created ? this.formatDate(issue.created) : '';
+			case 'modified':
+				return issue.modified ? this.formatDate(issue.modified) : '';
+			default:
+				return '';
+		}
+	}
+
+	/**
+	 * Escape CSV value
+	 */
+	private escapeCSV(value: string): string {
+		if (!value) return '';
+
+		// If contains comma, quote, or newline, wrap in quotes and escape quotes
+		if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+			return `"${value.replace(/"/g, '""')}"`;
+		}
+
+		return value;
+	}
+
+	/**
+	 * Download file
+	 */
+	private downloadFile(content: string, filename: string, mimeType: string): void {
+		const blob = new Blob([content], { type: mimeType });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	}
+
+	/**
 	 * Render filters UI
 	 */
 	private renderFilters(container: HTMLElement): void {
 		const filtersBtn = container.createEl('button', {
 			cls: 'convergent-table-filters-btn',
-			text: '🔍 Filters'
+			text: '🔍 Filters',
+			attr: { 'aria-label': 'Open filters menu' }
 		});
 
 		// Show active filter count
@@ -929,7 +1122,8 @@ export class TableView extends ItemView {
 	private renderColumnSettings(container: HTMLElement): void {
 		const settingsBtn = container.createEl('button', {
 			cls: 'convergent-table-settings-btn',
-			text: '⚙️ Columns'
+			text: '⚙️ Columns',
+			attr: { 'aria-label': 'Manage column visibility' }
 		});
 
 		const dropdown = container.createDiv('convergent-table-settings-dropdown');

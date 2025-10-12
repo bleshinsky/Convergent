@@ -1862,3 +1862,260 @@
 	font-size: 0.9em;
 	padding: 0 4px;
 }
+
+/* =============================================
+   TABLE EXPORT STYLES (Week 5 Day 5)
+   ============================================= */
+
+/* Export Button */
+.convergent-table-export-btn {
+	padding: 6px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	cursor: pointer;
+	transition: all 0.15s;
+	margin-right: 8px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.convergent-table-export-btn:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+/* Export Dropdown */
+.convergent-table-export-dropdown {
+	position: absolute;
+	top: 100%;
+	right: 0;
+	margin-top: 8px;
+	min-width: 200px;
+	background-color: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+	z-index: 100;
+	padding: 8px;
+}
+
+.convergent-table-export-options {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin-bottom: 8px;
+}
+
+/* Export Option Button */
+.convergent-table-export-option {
+	width: 100%;
+	padding: 8px 12px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background-color: var(--background-secondary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+	cursor: pointer;
+	transition: all 0.15s;
+	text-align: left;
+}
+
+.convergent-table-export-option:hover {
+	background-color: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+/* Export Info Text */
+.convergent-table-export-info {
+	color: var(--text-muted);
+	font-size: 0.8em;
+	text-align: center;
+	padding: 4px 8px;
+	font-style: italic;
+	border-top: 1px solid var(--background-modifier-border);
+	padding-top: 8px;
+}
+
+/* =============================================
+   MOBILE RESPONSIVENESS (Week 5 Day 5)
+   ============================================= */
+
+/* Tablet (768px - 1024px) */
+@media (max-width: 1024px) {
+	.convergent-table-header {
+		flex-wrap: wrap;
+		gap: 12px;
+	}
+
+	.convergent-table-header-right {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.convergent-table-search-input {
+		width: 180px;
+	}
+
+	.convergent-table-search-input:focus {
+		width: 220px;
+	}
+}
+
+/* Mobile (< 768px) - Horizontal Scroll */
+@media (max-width: 768px) {
+	.convergent-table-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.convergent-table-header-left {
+		width: 100%;
+	}
+
+	.convergent-table-header-right {
+		width: 100%;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.convergent-table-search {
+		flex: 1;
+		min-width: 150px;
+	}
+
+	.convergent-table-search-input {
+		width: 100%;
+	}
+
+	.convergent-table-search-input:focus {
+		width: 100%;
+	}
+
+	/* Make table horizontally scrollable on mobile */
+	.convergent-table-container {
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.convergent-table {
+		min-width: 800px; /* Ensure table doesn't squash */
+	}
+
+	/* Smaller text on mobile */
+	.convergent-table th,
+	.convergent-table td {
+		font-size: 0.85em;
+		padding: 10px 12px;
+	}
+
+	.convergent-table-status,
+	.convergent-table-priority {
+		font-size: 0.8em;
+	}
+
+	.convergent-table-label {
+		font-size: 0.7em;
+	}
+
+	/* Pagination adjustments */
+	.convergent-table-pagination {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
+
+	.convergent-table-pagination-nav {
+		width: 100%;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.convergent-table-pagination-pages {
+		flex-wrap: wrap;
+	}
+
+	.convergent-table-pagination-btn {
+		font-size: 0.85em;
+		padding: 5px 10px;
+	}
+
+	.convergent-table-pagination-page {
+		min-width: 28px;
+		height: 28px;
+		font-size: 0.85em;
+	}
+
+	/* Dropdown positioning adjustments */
+	.convergent-table-filters-dropdown,
+	.convergent-table-settings-dropdown,
+	.convergent-table-export-dropdown {
+		position: fixed;
+		top: auto;
+		right: 16px;
+		left: 16px;
+		margin-top: 8px;
+		max-width: calc(100vw - 32px);
+		max-height: 70vh;
+	}
+}
+
+/* Very Small Mobile (< 480px) - Card View Alternative */
+@media (max-width: 480px) {
+	/* Header buttons smaller */
+	.convergent-table-filters-btn,
+	.convergent-table-export-btn,
+	.convergent-table-settings-btn {
+		font-size: 0.85em;
+		padding: 5px 10px;
+	}
+
+	/* Even smaller table on very small screens */
+	.convergent-table th,
+	.convergent-table td {
+		font-size: 0.8em;
+		padding: 8px 10px;
+	}
+
+	/* Single-column pagination */
+	.convergent-table-pagination-nav {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.convergent-table-pagination-info {
+		order: -1;
+		margin-bottom: 8px;
+	}
+}
+
+/* Print Styles */
+@media print {
+	.convergent-table-header-right {
+		display: none !important;
+	}
+
+	.convergent-table-pagination {
+		display: none !important;
+	}
+
+	.convergent-table {
+		border: 1px solid #000;
+	}
+
+	.convergent-table th,
+	.convergent-table td {
+		border: 1px solid #000;
+		padding: 4px 8px;
+	}
+
+	.convergent-table-row:hover {
+		background-color: transparent !important;
+	}
+}
