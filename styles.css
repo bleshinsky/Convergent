@@ -2119,3 +2119,314 @@
 		background-color: transparent !important;
 	}
 }
+
+/* ===================================================================
+ * TIMELINE VIEW
+ * =================================================================== */
+
+.convergent-timeline {
+	padding: 16px;
+	height: 100%;
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+}
+
+.convergent-timeline-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.convergent-timeline-header h2 {
+	margin: 0;
+	font-size: 1.2em;
+}
+
+.convergent-timeline-controls {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.convergent-timeline-zoom {
+	display: flex;
+	gap: 4px;
+}
+
+.convergent-zoom-btn {
+	padding: 4px 10px;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: 0.85em;
+}
+
+.convergent-zoom-btn.active,
+.convergent-zoom-btn:hover {
+	background: var(--interactive-accent);
+	color: var(--text-on-accent);
+	border-color: var(--interactive-accent);
+}
+
+.convergent-timeline-nav {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.convergent-nav-btn {
+	padding: 4px 10px;
+	border-radius: 4px;
+	border: 1px solid var(--background-modifier-border);
+	background: var(--background-primary);
+	color: var(--text-normal);
+	cursor: pointer;
+	font-size: 0.85em;
+}
+
+.convergent-nav-btn:hover {
+	background: var(--background-modifier-hover);
+}
+
+.convergent-date-range {
+	font-size: 0.9em;
+	color: var(--text-muted);
+	min-width: 180px;
+	text-align: center;
+}
+
+.convergent-timeline-container {
+	position: relative;
+	flex: 1;
+	overflow-x: auto;
+}
+
+.convergent-timeline-date-header {
+	display: flex;
+	align-items: center;
+	margin-bottom: 8px;
+	position: sticky;
+	top: 0;
+	background: var(--background-primary);
+	z-index: 10;
+	padding: 4px 0;
+	border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.convergent-timeline-label-cell {
+	min-width: 200px;
+	width: 200px;
+	flex-shrink: 0;
+}
+
+.convergent-timeline-dates {
+	position: relative;
+	flex: 1;
+	height: 28px;
+}
+
+.convergent-timeline-date-cell {
+	position: absolute;
+	font-size: 0.75em;
+	color: var(--text-muted);
+	white-space: nowrap;
+	transform: translateX(-50%);
+}
+
+.convergent-timeline-issues {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.convergent-timeline-row {
+	display: flex;
+	align-items: center;
+	min-height: 32px;
+	border-radius: 4px;
+	transition: background 0.1s;
+}
+
+.convergent-timeline-row:hover {
+	background: var(--background-modifier-hover);
+}
+
+.convergent-timeline-label {
+	min-width: 200px;
+	width: 200px;
+	padding: 4px 8px;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex-shrink: 0;
+	overflow: hidden;
+}
+
+.convergent-timeline-status-icon {
+	color: var(--text-muted);
+	font-size: 0.85em;
+	flex-shrink: 0;
+}
+
+.convergent-timeline-title {
+	font-size: 0.85em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+	color: var(--text-normal);
+	text-decoration: none;
+}
+
+.convergent-timeline-title:hover {
+	color: var(--interactive-accent);
+	text-decoration: underline;
+}
+
+.convergent-timeline-bar-cell {
+	position: relative;
+	flex: 1;
+	height: 24px;
+}
+
+.convergent-timeline-bar {
+	position: absolute;
+	height: 18px;
+	top: 3px;
+	border-radius: 4px;
+	background: var(--interactive-accent);
+	opacity: 0.7;
+	display: flex;
+	align-items: center;
+	padding: 0 6px;
+	min-width: 8px;
+	cursor: pointer;
+	transition: opacity 0.15s;
+}
+
+.convergent-timeline-bar:hover {
+	opacity: 1;
+}
+
+.convergent-timeline-bar-backlog { background: var(--text-muted); }
+.convergent-timeline-bar-triage { background: #f59e0b; }
+.convergent-timeline-bar-todo { background: #6366f1; }
+.convergent-timeline-bar-in-progress { background: #3b82f6; }
+.convergent-timeline-bar-done { background: #22c55e; }
+.convergent-timeline-bar-canceled { background: var(--text-faint); }
+
+.convergent-timeline-bar-overdue {
+	background: #ef4444 !important;
+	animation: convergent-pulse 2s infinite;
+}
+
+.convergent-timeline-bar-due-soon {
+	background: #f59e0b !important;
+}
+
+@keyframes convergent-pulse {
+	0%, 100% { opacity: 0.7; }
+	50% { opacity: 1; }
+}
+
+.convergent-timeline-priority {
+	font-size: 0.7em;
+	flex-shrink: 0;
+}
+
+.convergent-timeline-today-line {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 2px;
+	background: var(--color-red);
+	opacity: 0.6;
+	pointer-events: none;
+	z-index: 5;
+}
+
+.convergent-timeline-empty,
+.convergent-timeline-no-issues {
+	text-align: center;
+	color: var(--text-muted);
+	padding: 32px 16px;
+}
+
+/* ===================================================================
+ * MSP SESSION STYLES
+ * =================================================================== */
+
+.convergent-modal-subtitle {
+	color: var(--text-muted);
+	font-size: 0.9em;
+	margin: -8px 0 12px;
+}
+
+.convergent-objectives-container {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin: 8px 0 12px;
+}
+
+.convergent-objective-row {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+}
+
+.convergent-objective-input {
+	flex: 1;
+	padding: 6px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: var(--background-primary);
+	color: var(--text-normal);
+	font-size: 0.9em;
+}
+
+.convergent-objective-remove {
+	padding: 4px 8px;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 4px;
+	background: transparent;
+	color: var(--text-muted);
+	cursor: pointer;
+	font-size: 0.8em;
+}
+
+.convergent-objective-remove:hover {
+	color: var(--color-red);
+	border-color: var(--color-red);
+}
+
+.convergent-session-summary {
+	background: var(--background-secondary);
+	border-radius: 6px;
+	padding: 8px 12px;
+	margin-bottom: 12px;
+	font-size: 0.9em;
+	color: var(--text-muted);
+}
+
+/* ===================================================================
+ * PROJECT SUGGEST STYLES
+ * =================================================================== */
+
+.convergent-suggest-title {
+	font-size: 0.9em;
+	font-weight: 500;
+}
+
+.convergent-suggest-subtitle {
+	font-size: 0.85em;
+	color: var(--text-muted);
+	font-style: italic;
+}

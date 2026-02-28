@@ -1,218 +1,222 @@
 # Convergent
 
-**Context-aware project management for Obsidian.**
+**Linear-style project management for Obsidian — built for solo developers.**
 
-Fast, keyboard-first task management with multiple views, session tracking, and AI context export. Built for solo developers who want their tasks integrated with their knowledge.
+Fast, keyboard-first task management with Kanban boards, timeline views, session tracking, and AI context export. Your tasks live inside your vault alongside your notes — no cloud, no subscriptions.
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
 [![Obsidian Plugin](https://img.shields.io/badge/Obsidian-Plugin-purple)](https://obsidian.md)
-![Status: In Development](https://img.shields.io/badge/Status-In%20Development-yellow)
+![Version](https://img.shields.io/badge/version-1.0.0-green)
+![Tests](https://img.shields.io/badge/tests-48%20passing-brightgreen)
 
 ---
 
-## ✨ Features
+## Features
 
-- **⚡ Fast Issue Creation** - `Cmd/Ctrl+I` to create tasks in seconds
-- **📊 Multiple Views** - Kanban boards, tables, and timeline roadmaps
-- **🧠 Context Engineering** - Track sessions, decisions, and blockers
-- **🔗 Knowledge Integration** - Tasks live alongside your notes
-- **💾 Local-First** - 100% markdown, no cloud, no subscriptions
-- **🤖 AI-Ready** - Export structured context for coding assistants
+### Issue Management
+- **Create issues** with `Ctrl+Shift+I` — title, status, priority, project, description
+- **6 status values:** Backlog → Triage → Todo → In Progress → Done → Canceled
+- **5 priority levels:** No Priority, Low, Medium, High, Urgent
+- **Quick Switcher** (`Ctrl+Shift+O`) — fuzzy search with status/priority filters
+- **Batch operations** — multi-select + bulk status/priority/delete
+- **Properties editor** (`Ctrl+Shift+E`) — labels, due date, estimate
 
-## Why Convergent?
+### Relationship System
+- **5 relationship types:** parent, child, blocks, blocked-by, related
+- **Wikilink-based storage** — fully compatible with Obsidian's graph and Dataview
+- **Cycle detection** — prevents circular parent chains
+- **Bidirectional updates** — link one side, both sides update automatically
 
-Most project management tools live in separate apps, forcing constant context-switching. **Convergent lives in your vault**, connecting your tasks with your knowledge graph.
+### Project Management
+- **Create projects** with `Ctrl+Shift+N`
+- **Issue → Project linking** via wikilinks in the issue creation modal
+- **Progress auto-calculation** — project progress updates automatically as issues change
 
-Perfect for solo developers who value:
-- 🚀 **Speed over ceremony** - Keyboard shortcuts for everything
-- 🏠 **Local data over cloud services** - Your vault, your data
-- 🔗 **Integration over isolation** - Tasks + notes in one place
-- 🎯 **Context over chaos** - AI-ready session tracking
+### Views
+| View | How to Open | Description |
+|------|------------|-------------|
+| **Kanban Board** | Ribbon icon or command | 6 columns, drag-and-drop status changes |
+| **Table View** | Ribbon icon or command | Sortable/filterable table, CSV/JSON export |
+| **Timeline** | Ribbon icon or command | Gantt-style view by due date, 3 zoom levels |
 
-## 🎯 Project Status
+### MSP Session Tracking (R³ Protocol)
+The Minimum Sustainable Pace (MSP) system helps you maintain context across coding sessions:
 
-**Current Phase:** Foundation (Week 1-2)
-- [x] Repository initialized
-- [x] Project planning complete
-- [ ] TypeScript setup
-- [ ] Obsidian Bases integration
-- [ ] Data models
+- **Route** — Start a session with your objectives for the day
+- **Recall** — See last session's objectives, recently completed work, and active blockers
+- **Record** — End the session with progress notes and duration tracking
 
-**Target:** MVP release in Week 6 (Beta testing)
+Commands: `Start session (MSP)` → `End session (MSP)`
 
-See [Implementation Plan](docs/04-Implementation-Plan.md) for complete roadmap.
+### Decisions & Blockers
+- **Log decision (ADR)** — Architecture Decision Records with rationale, alternatives, consequences
+- **Log blocker** — Blockers with impact level, description, workaround
 
-## 📋 Roadmap
+### AI Context Export
+- **Export context to clipboard** — generates structured context targeting <1000 tokens
+- Includes: active session objectives, In Progress issues (priority-sorted), active blockers, recent completions
+- **Memory flag** — mark key issues to always include them in context exports
 
-### Phase 1: Foundation (Weeks 1-2) - *In Progress*
-- Plugin skeleton & TypeScript setup
-- Data models (Issue, Project, Session)
-- Obsidian Bases integration
-- Basic file operations
+### Automation
+- **Progress tracking** — project progress recalculates automatically (debounced 500ms)
+- **Status automation** — parent issues auto-complete when all children are Done
+- **Recurring issues** — create issues on daily/weekly/biweekly/monthly cadences
 
-### Phase 2: Core Features (Weeks 3-6)
-- Issue management (CRUD)
-- Kanban board with drag-drop
-- Table view with filtering
-- Project creation & linking
-- **MVP Beta Release**
+---
 
-### Phase 3: Context Engineering (Weeks 7-10)
-- Session tracking (Route-Recall-Record)
-- Decision documentation
-- Blocker logging
-- AI context export
-- Graph visualization (Juggl integration)
+## Installation
 
-### Phase 4: Polish & Release (Weeks 11-12)
-- Timeline/roadmap view
-- Recurring tasks
-- Bulk operations
-- Documentation
-- **Community Plugin Submission**
+### From GitHub Releases (Recommended)
+1. Download `convergent-1.0.0.zip` from [Releases](https://github.com/bleshinsky/Convergent/releases)
+2. Extract to your vault's `.obsidian/plugins/convergent/` folder
+3. Reload Obsidian (or restart)
+4. Enable **Convergent** in Settings → Community Plugins
 
-## 🏗️ Architecture
+### From Community Plugins
+Search for **Convergent** in Obsidian's Community Plugins browser (pending review).
 
-**Built on:**
-- **Obsidian Bases** - Native database views
-- **Frontmatter + Wikilinks** - Markdown-native data model
-- **Dataview** - Powerful queries
-- **Juggl** - Graph visualization (optional)
+### Manual Build
+```bash
+git clone https://github.com/bleshinsky/Convergent.git
+cd Convergent
+npm install
+npm run build
+# Copy main.js, styles.css, manifest.json to your vault's plugins folder
+```
 
-**Data Model:**
+---
+
+## Quick Start
+
+1. **Install and enable** the plugin
+2. Press `Ctrl+Shift+I` to create your first issue
+3. Press `Ctrl+Shift+O` to search and navigate issues
+4. Click the dashboard icon in the ribbon to open the Kanban board
+5. Use the command palette to start an MSP session when you begin work
+
+---
+
+## Commands Reference
+
+| Command | Hotkey | Description |
+|---------|--------|-------------|
+| Create issue | `Ctrl+Shift+I` | Open issue creation modal |
+| Quick switcher | `Ctrl+Shift+O` | Fuzzy-search all issues |
+| Change status | `Ctrl+Shift+S` | Change status of current issue |
+| Change priority | `Ctrl+Shift+P` | Change priority of current issue |
+| Edit properties | `Ctrl+Shift+E` | Edit labels, due date, estimate |
+| Create project | `Ctrl+Shift+N` | Open project creation modal |
+| Set parent issue | `Ctrl+Shift+Y` | Link a parent issue |
+| Add child issue | `Ctrl+Shift+U` | Link a child issue |
+| Open Kanban board | — | Open the Kanban view |
+| Open issue table | — | Open the Table view |
+| Open timeline | — | Open the Timeline view |
+| Start session (MSP) | — | Begin an MSP work session |
+| End session (MSP) | — | Close the current session |
+| Export context | — | Copy AI context to clipboard |
+| Log decision (ADR) | — | Log an architecture decision |
+| Log blocker | — | Log a blocking issue |
+| Toggle memory flag | — | Mark issue for context export |
+| Recalculate all project progress | — | Force-refresh all project stats |
+
+---
+
+## Configuration
+
+Open Settings → Convergent to configure:
+
+**Folder Locations** — where to store Issues, Projects, Sessions, Decisions, Blockers files
+
+**Issue Defaults** — default status and priority for new issues
+
+**Automation**
+- Status automation (auto-complete parents)
+- Progress tracking (auto-update project %)
+- Recurring issues (hourly background check)
+
+**MSP** — Enable session tracking, auto-start sessions on Obsidian launch
+
+**MCP Integration** — Optional HTTP push to a Model Context Protocol server
+
+---
+
+## Data Model
+
+All data is stored as Markdown with YAML frontmatter — fully human-readable and compatible with Dataview, Obsidian Graph, and Bases.
+
+**Issue example:**
 ```yaml
-# vault/Issues/ISSUE-123.md
 ---
 type: issue
+id: ISSUE-42
+title: Build the authentication flow
 status: In Progress
 priority: High
 project: "[[Project Alpha]]"
-blocked-by: ["[[ISSUE-120]]"]
-labels: [bug, frontend]
-session: "[[Session 2025-10-08]]"
-progress: 65
+parent: "[[ISSUE-40]]"
+sub-issues:
+  - "[[ISSUE-43]]"
+  - "[[ISSUE-44]]"
+blocks:
+  - "[[ISSUE-50]]"
+labels:
+  - backend
+  - auth
+due: 2025-03-01
+estimate: 4
+created: 2025-01-15T09:00:00.000Z
+modified: 2025-02-01T14:30:00.000Z
 ---
 
 ## Description
-[Markdown content with full formatting]
+
+Implement JWT-based authentication...
 ```
 
-## 📚 Documentation
-
-- [Discovery Analysis](docs/01-Discovery-Analysis.md) - Feature analysis & feasibility
-- [Technical Architecture](docs/02-Technical-Architecture.md) - Plugin design & data models
-- [Requirements Specification](docs/03-Software-Requirements-Specification.md) - Complete SRS
-- [Implementation Plan](docs/04-Implementation-Plan.md) - 12-week development roadmap
-- [Executive Summary](docs/00-Executive-Summary.md) - Project overview
-
-## 🤝 Contributing
-
-Convergent is in early development. Contributions are welcome!
-
-### How to Contribute
-
-1. **Beta Testing** - Sign up for Week 6 MVP testing (coming soon)
-2. **Feature Requests** - Open an issue with your ideas
-3. **Bug Reports** - Help us improve quality
-4. **Code Contributions** - See [CONTRIBUTING.md](CONTRIBUTING.md)
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/bleshinsky/Convergent.git
-cd Convergent
-
-# Install dependencies
-npm install
-
-# Build the plugin
-npm run build
-
-# Development mode (watch for changes)
-npm run dev
+**Project example:**
+```yaml
+---
+type: project
+id: PROJ-3
+title: Project Alpha
+status: In Progress
+lead: me
+created: 2025-01-01
+target: 2025-06-01
+progress: 35
+total-issues: 20
+completed-issues: 7
+---
 ```
-
-By contributing, you agree that your contributions will be licensed under GPL-3.0 and that the project maintainer retains the right to use your contributions in future offerings while keeping the core plugin free and open source.
-
-## 📦 Installation
-
-**From Community Plugins** (Coming Soon - Week 12)
-1. Open Obsidian Settings
-2. Go to Community Plugins
-3. Search for "Convergent"
-4. Click Install
-
-**Manual Installation** (Current - For Developers)
-1. Download latest release from [Releases](https://github.com/bleshinsky/Convergent/releases)
-2. Extract to `.obsidian/plugins/convergent/`
-3. Reload Obsidian
-4. Enable Convergent in Community Plugins settings
-
-## 🎮 Usage
-
-### Quick Start
-
-1. **Create your first issue:** `Cmd/Ctrl+I`
-2. **Open Kanban board:** Command palette → "Convergent: Open Kanban"
-3. **Start a session:** Command palette → "Convergent: Start Session"
-4. **Export context:** Command palette → "Convergent: Export Context"
-
-### Keyboard Shortcuts
-
-| Shortcut | Action |
-|----------|--------|
-| `Cmd/Ctrl+I` | Create issue |
-| `Cmd/Ctrl+Shift+T` | Set status: Todo |
-| `Cmd/Ctrl+Shift+P` | Set status: In Progress |
-| `Cmd/Ctrl+Shift+D` | Set status: Done |
-
-More shortcuts in [documentation](docs/shortcuts.md) (coming soon).
-
-## 🔮 Future Plans
-
-**Core Plugin (Always Free):**
-- ✅ Solo developer features
-- ✅ All views (Kanban, Table, Timeline)
-- ✅ Session tracking & context export
-- ✅ Unlimited issues/projects
-- ✅ Local-first, no limits
-
-**Team Features (Future - Separate Service):**
-- Real-time collaboration
-- Shared workspaces
-- Team analytics
-- SSO/SAML (enterprise)
-
-The core Convergent plugin will always remain free and open source under GPL-3.0.
-
-## 📄 License
-
-GPL-3.0 - See [LICENSE](LICENSE) for details.
-
-Copyright (c) 2025 Boris Leshinsky
-
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-
-## 🙏 Acknowledgments
-
-Built with inspiration from the amazing Obsidian plugin ecosystem:
-
-- **Obsidian Team** - Incredible plugin API and Bases system
-- **Juggl** (Emile van Krieken) - Graph visualization excellence
-- **Dataview** - Powerful query engine
-- **Obsidian Community** - Endless inspiration
-
-## 💬 Community & Support
-
-- **Issues:** [GitHub Issues](https://github.com/bleshinsky/Convergent/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/bleshinsky/Convergent/discussions)
-- **Obsidian Forum:** [Coming Soon]
 
 ---
 
-**Status:** 🚧 In Development (Week 1)
-**Next Milestone:** MVP Beta (Week 6)
-**License:** GPL-3.0 (Free Forever)
+## Development
 
-Made with ❤️ for the Obsidian community
+```bash
+npm install        # install dependencies
+npm run build      # type-check + production build
+npm run dev        # watch mode (development)
+npm test           # run unit tests (48 tests)
+npm run test:coverage  # run tests with coverage report
+```
+
+See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation and development conventions.
+
+---
+
+## Contributing
+
+Bug reports and feature requests welcome via [GitHub Issues](https://github.com/bleshinsky/Convergent/issues).
+
+For code contributions, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## License
+
+GPL-3.0 — See [LICENSE](LICENSE) for details.
+
+Copyright (c) 2025–2026 Boris Leshinsky
+
+The core Convergent plugin is and will always remain free and open source.

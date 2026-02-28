@@ -72,6 +72,7 @@ export class ConvergentSettingTab extends PluginSettingTab {
 			.setName('Default priority')
 			.setDesc('Default priority for new issues')
 			.addDropdown(dropdown => dropdown
+				.addOption('No Priority', 'No Priority')
 				.addOption('Low', 'Low')
 				.addOption('Medium', 'Medium')
 				.addOption('High', 'High')
@@ -79,6 +80,39 @@ export class ConvergentSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.defaultPriority)
 				.onChange(async (value) => {
 					this.plugin.settings.defaultPriority = value;
+					await this.plugin.saveSettings();
+				}));
+
+		// Automation Section
+		containerEl.createEl('h3', { text: 'Automation' });
+
+		new Setting(containerEl)
+			.setName('Status automation')
+			.setDesc('Automatically mark parent issues Done when all children are Done')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableStatusAutomation)
+				.onChange(async (value) => {
+					this.plugin.settings.enableStatusAutomation = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Progress tracking')
+			.setDesc('Automatically update project progress percentage when issues change')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableProgressTracking)
+				.onChange(async (value) => {
+					this.plugin.settings.enableProgressTracking = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('Recurring issues')
+			.setDesc('Automatically create new issues from recurring templates')
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.enableRecurringIssues)
+				.onChange(async (value) => {
+					this.plugin.settings.enableRecurringIssues = value;
 					await this.plugin.saveSettings();
 				}));
 
