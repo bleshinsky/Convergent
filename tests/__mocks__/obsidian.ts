@@ -58,11 +58,17 @@ export class Modal {
 
 export class Plugin {
 	app: App;
+	private _data: Record<string, unknown> = {};
+
 	constructor(app: App, manifest: any) {
 		this.app = app;
 	}
-	loadData() { return Promise.resolve({}); }
-	saveData(data: any) { return Promise.resolve(); }
+
+	loadData() { return Promise.resolve({ ...this._data }); }
+	saveData(data: any) {
+		this._data = { ...data };
+		return Promise.resolve();
+	}
 	addCommand(command: any) {}
 	addRibbonIcon(icon: string, title: string, cb: () => void) { return document.createElement('div'); }
 	addStatusBarItem() { return document.createElement('div'); }
@@ -133,26 +139,12 @@ export function normalizePath(path: string) {
 	return path.replace(/\\/g, '/').replace(/\/+/g, '/');
 }
 
-export class App {
-	vault: MockVault;
-	metadataCache: MockMetadataCache;
-	workspace: MockWorkspace;
-	fileManager: MockFileManager;
-
-	constructor() {
-		this.vault = new MockVault();
-		this.metadataCache = new MockMetadataCache();
-		this.workspace = new MockWorkspace();
-		this.fileManager = new MockFileManager();
-	}
-}
-
 export class MockVault {
-	private files: Map<string, { file: TFile; content: string; frontmatter: Record<string, unknown> }> = new Map();
+	private files: Map<string, { file: TFile; content: string }> = new Map();
 
 	create(path: string, content: string) {
 		const file = new TFile(path);
-		this.files.set(path, { file, content, frontmatter: {} });
+		this.files.set(path, { file, content });
 		return Promise.resolve(file);
 	}
 
@@ -191,28 +183,41 @@ export class MockVault {
 		return { event, cb };
 	}
 
-	// Test helper: add a file with frontmatter
-	_addFile(path: string, frontmatter: Record<string, unknown>, content = '') {
+	/** Test helper: add a file to the vault */
+	_addFile(path: string, content = ''): TFile {
 		const file = new TFile(path);
-		this.files.set(path, { file, content, frontmatter });
+		this.files.set(path, { file, content });
 		return file;
-	}
-
-	_getFrontmatter(path: string) {
-		return this.files.get(path)?.frontmatter || null;
 	}
 }
 
 export class MockMetadataCache {
 	private cache: Map<string, { frontmatter: Record<string, unknown> }> = new Map();
 
+	constructor(private vault?: MockVault) {}
+
 	getFileCache(file: TFile) {
 		return this.cache.get(file.path) || null;
 	}
 
-	// Test helper
+	/**
+	 * Resolve a wikilink to a TFile by searching the vault for a matching basename.
+	 * Case-insensitive matching.
+	 */
+	getFirstLinkpathDest(linkpath: string, sourcePath: string): TFile | null {
+		if (!this.vault) return null;
+		const lower = linkpath.toLowerCase();
+		return this.vault.getFiles().find(f => f.basename.toLowerCase() === lower) || null;
+	}
+
+	/** Test helper: set frontmatter for a file in the metadata cache */
 	_setFrontmatter(file: TFile, frontmatter: Record<string, unknown>) {
 		this.cache.set(file.path, { frontmatter });
+	}
+
+	/** Test helper: get current frontmatter for a file */
+	_getFrontmatter(file: TFile): Record<string, unknown> | null {
+		return this.cache.get(file.path)?.frontmatter || null;
 	}
 
 	on(event: string, cb: (...args: any[]) => any) {
@@ -237,9 +242,45 @@ export class MockWorkspace {
 }
 
 export class MockFileManager {
+	constructor(private metadataCache?: MockMetadataCache) {}
+
 	processFrontMatter(file: TFile, cb: (fm: Record<string, unknown>) => void) {
-		const fm: Record<string, unknown> = {};
+		// Read existing frontmatter from cache or start fresh
+		const existing = this.metadataCache?._getFrontmatter(file) ?? {};
+		const fm = { ...existing };
 		cb(fm);
+		// Persist updated frontmatter back to metadata cache
+		if (this.metadataCache) {
+			this.metadataCache._setFrontmatter(file, fm);
+		}
 		return Promise.resolve();
 	}
+}
+
+export class App {
+	vault: MockVault;
+	metadataCache: MockMetadataCache;
+	workspace: MockWorkspace;
+	fileManager: MockFileManager;
+
+	constructor() {
+		this.vault = new MockVault();
+		this.metadataCache = new MockMetadataCache(this.vault);
+		this.workspace = new MockWorkspace();
+		this.fileManager = new MockFileManager(this.metadataCache);
+	}
+}
+
+/**
+ * Test helper: add a file to the vault AND set its frontmatter in the metadata cache in one step.
+ */
+export function addFileWithFrontmatter(
+	app: App,
+	path: string,
+	frontmatter: Record<string, unknown>,
+	content = ''
+): TFile {
+	const file = (app.vault as MockVault)._addFile(path, content);
+	(app.metadataCache as MockMetadataCache)._setFrontmatter(file, frontmatter);
+	return file;
 }

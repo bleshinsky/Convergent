@@ -87,5 +87,100 @@ describe('ContextExport', () => {
 			expect(ctx).toContain('ISSUE-42');
 			expect(ctx).toContain('Build the thing');
 		});
+
+		it('sorts In Progress issues by priority (Urgent before High before Medium)', async () => {
+			const f1 = new TFile('Issues/ISSUE-1.md');
+			const f2 = new TFile('Issues/ISSUE-2.md');
+			const f3 = new TFile('Issues/ISSUE-3.md');
+			utils.getAllIssues.mockResolvedValue([f1, f2, f3]);
+			utils.getFrontmatter.mockImplementation((file: TFile) => {
+				if (file.path === f1.path) {
+					return Promise.resolve({ type: 'issue', id: 'ISSUE-1', title: 'High task', status: 'In Progress', priority: 'High' });
+				}
+				if (file.path === f2.path) {
+					return Promise.resolve({ type: 'issue', id: 'ISSUE-2', title: 'Urgent task', status: 'In Progress', priority: 'Urgent' });
+				}
+				return Promise.resolve({ type: 'issue', id: 'ISSUE-3', title: 'Medium task', status: 'In Progress', priority: 'Medium' });
+			});
+
+			const ctx = await exporter.generateContext(null);
+			const urgentPos = ctx.indexOf('ISSUE-2');
+			const highPos = ctx.indexOf('ISSUE-1');
+			const mediumPos = ctx.indexOf('ISSUE-3');
+			expect(urgentPos).toBeLessThan(highPos);
+			expect(highPos).toBeLessThan(mediumPos);
+		});
+
+		it('includes memory-flagged issues in the MEMORIES section', async () => {
+			const f = new TFile('Issues/ISSUE-1.md');
+			utils.getAllIssues.mockResolvedValue([f]);
+			utils.getFrontmatter.mockResolvedValue({
+				type: 'issue', id: 'ISSUE-1', title: 'Important reference', status: 'Todo', memory: true
+			});
+
+			const ctx = await exporter.generateContext(null);
+			expect(ctx).toContain('MEMORIES');
+			expect(ctx).toContain('ISSUE-1');
+		});
+
+		it('does not show MEMORIES section when no memory-flagged issues', async () => {
+			const f = new TFile('Issues/ISSUE-1.md');
+			utils.getAllIssues.mockResolvedValue([f]);
+			utils.getFrontmatter.mockResolvedValue({
+				type: 'issue', id: 'ISSUE-1', title: 'Normal issue', status: 'Todo'
+			});
+
+			const ctx = await exporter.generateContext(null);
+			expect(ctx).not.toContain('MEMORIES');
+		});
+
+		it('shows OVERDUE warning for past due dates', async () => {
+			const f = new TFile('Issues/ISSUE-1.md');
+			utils.getAllIssues.mockResolvedValue([f]);
+			utils.getFrontmatter.mockResolvedValue({
+				type: 'issue', id: 'ISSUE-1', title: 'Overdue task',
+				status: 'In Progress', due: '2020-01-01'
+			});
+
+			const ctx = await exporter.generateContext(null);
+			expect(ctx).toContain('OVERDUE');
+		});
+
+		it('shows "due in Nd" for issues due within 7 days', async () => {
+			const f = new TFile('Issues/ISSUE-1.md');
+			const soonDate = new Date();
+			soonDate.setDate(soonDate.getDate() + 3);
+			const dueStr = soonDate.toISOString().slice(0, 10);
+
+			utils.getAllIssues.mockResolvedValue([f]);
+			utils.getFrontmatter.mockResolvedValue({
+				type: 'issue', id: 'ISSUE-1', title: 'Due soon', status: 'In Progress', due: dueStr
+			});
+
+			const ctx = await exporter.generateContext(null);
+			expect(ctx).toMatch(/due in \d+d/);
+		});
+
+		it('does not show priority label for "No Priority" issues', async () => {
+			const f = new TFile('Issues/ISSUE-1.md');
+			utils.getAllIssues.mockResolvedValue([f]);
+			utils.getFrontmatter.mockResolvedValue({
+				type: 'issue', id: 'ISSUE-1', title: 'Unprioritized', status: 'In Progress', priority: 'No Priority'
+			});
+
+			const ctx = await exporter.generateContext(null);
+			expect(ctx).not.toContain('(No Priority)');
+		});
+
+		it('shows priority label for prioritized issues', async () => {
+			const f = new TFile('Issues/ISSUE-1.md');
+			utils.getAllIssues.mockResolvedValue([f]);
+			utils.getFrontmatter.mockResolvedValue({
+				type: 'issue', id: 'ISSUE-1', title: 'Critical thing', status: 'In Progress', priority: 'Urgent'
+			});
+
+			const ctx = await exporter.generateContext(null);
+			expect(ctx).toContain('(Urgent)');
+		});
 	});
 });
