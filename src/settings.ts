@@ -10,6 +10,11 @@ export interface ConvergentSettings {
 	defaultStatus: string;
 	defaultPriority: string;
 
+	// Automation
+	enableStatusAutomation: boolean;
+	enableProgressTracking: boolean;
+	enableRecurringIssues: boolean;
+
 	// MSP settings
 	enableMSP: boolean;
 	autoStartSession: boolean;
@@ -33,7 +38,12 @@ export const DEFAULT_SETTINGS: ConvergentSettings = {
 
 	// Issue defaults
 	defaultStatus: 'Todo',
-	defaultPriority: 'Medium',
+	defaultPriority: 'No Priority',
+
+	// Automation
+	enableStatusAutomation: true,
+	enableProgressTracking: true,
+	enableRecurringIssues: true,
 
 	// MSP settings
 	enableMSP: true,

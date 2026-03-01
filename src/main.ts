@@ -5,45 +5,79 @@ import { IssueCommands } from './commands/issue-commands';
 import { SwitcherCommands } from './commands/switcher-commands';
 import { BatchCommands } from './commands/batch-commands';
 import { RelationshipCommands } from './commands/relationship-commands';
+import { ProjectCommands } from './commands/ProjectCommands';
+import { MSPCommands } from './commands/MSPCommands';
+import { DecisionBlockerCommands } from './commands/DecisionBlockerCommands';
 import { FrontmatterUtils } from './utils/frontmatter';
 import { RelationshipUtils } from './utils/relationships';
+import { ViewManager } from './utils/viewManager';
 import { KanbanView, KANBAN_VIEW_TYPE } from './views/kanban-view';
 import { TableView, TABLE_VIEW_TYPE } from './views/table-view';
+import { TimelineView, TIMELINE_VIEW_TYPE } from './views/timeline-view';
+import { ProgressTracking } from './automation/ProgressTracking';
+import { StatusAutomation } from './automation/StatusAutomation';
+import { RecurringIssues } from './automation/RecurringIssues';
 
 export default class ConvergentPlugin extends Plugin {
 	settings: ConvergentSettings;
 	frontmatterUtils: FrontmatterUtils;
 	relationshipUtils: RelationshipUtils;
+	viewManager: ViewManager;
+
+	// Commands
 	issueCommands: IssueCommands;
 	switcherCommands: SwitcherCommands;
 	batchCommands: BatchCommands;
 	relationshipCommands: RelationshipCommands;
+	projectCommands: ProjectCommands;
+	mspCommands: MSPCommands;
+	decisionBlockerCommands: DecisionBlockerCommands;
+
+	// Automation
+	progressTracking: ProgressTracking;
+	statusAutomation: StatusAutomation;
+	recurringIssues: RecurringIssues;
+
+	// Status bar
+	private sessionStatusBar: HTMLElement;
 
 	async onload() {
 		console.log('Loading Convergent plugin');
 
-		// Load settings
 		await this.loadSettings();
 
 		// Initialize utilities
 		this.frontmatterUtils = new FrontmatterUtils(this.app);
 		this.relationshipUtils = new RelationshipUtils(this.app);
+		this.viewManager = new ViewManager(this);
+		await this.viewManager.load();
+
+		// Initialize automation
+		this.progressTracking = new ProgressTracking(this.app, this.frontmatterUtils);
+		this.statusAutomation = new StatusAutomation(
+			this.app,
+			this.frontmatterUtils,
+			() => this.settings.enableStatusAutomation
+		);
+		this.recurringIssues = new RecurringIssues(
+			this.app,
+			this.frontmatterUtils,
+			() => this.settings.issuesFolder
+		);
 
 		// Register views
-		this.registerView(
-			KANBAN_VIEW_TYPE,
-			(leaf) => new KanbanView(leaf, this)
-		);
-		this.registerView(
-			TABLE_VIEW_TYPE,
-			(leaf) => new TableView(leaf, this)
-		);
+		this.registerView(KANBAN_VIEW_TYPE, (leaf) => new KanbanView(leaf, this));
+		this.registerView(TABLE_VIEW_TYPE, (leaf) => new TableView(leaf, this));
+		this.registerView(TIMELINE_VIEW_TYPE, (leaf) => new TimelineView(leaf, this));
 
 		// Initialize command handlers
 		this.issueCommands = new IssueCommands(this.app, this, this.frontmatterUtils);
 		this.switcherCommands = new SwitcherCommands(this.app, this);
 		this.batchCommands = new BatchCommands(this.app, this);
 		this.relationshipCommands = new RelationshipCommands(this.app, this, this.relationshipUtils, this.frontmatterUtils);
+		this.projectCommands = new ProjectCommands(this.app, this, this.frontmatterUtils);
+		this.mspCommands = new MSPCommands(this.app, this, this.frontmatterUtils);
+		this.decisionBlockerCommands = new DecisionBlockerCommands(this.app, this, this.frontmatterUtils);
 
 		// Register commands
 		this.registerCommands();
@@ -51,26 +85,39 @@ export default class ConvergentPlugin extends Plugin {
 		// Register event handlers
 		this.registerEventHandlers();
 
-		// Add ribbon icons
-		this.addRibbonIcon('layout-dashboard', 'Open Kanban Board', () => {
-			this.activateKanbanView();
-		});
-		this.addRibbonIcon('table', 'Open Issue Table', () => {
-			this.activateTableView();
-		});
+		// Ribbon icons
+		this.addRibbonIcon('layout-dashboard', 'Open Kanban board', () => this.activateKanbanView());
+		this.addRibbonIcon('table', 'Open issue table', () => this.activateTableView());
+		this.addRibbonIcon('calendar', 'Open timeline', () => this.activateTimelineView());
 
-		// Add settings tab
+		// Settings tab
 		this.addSettingTab(new ConvergentSettingTab(this.app, this));
 
-		// Add status bar item
-		const statusBarItem = this.addStatusBarItem();
-		statusBarItem.setText('Convergent ready');
+		// Status bar
+		if (this.settings.showStatusBar) {
+			this.sessionStatusBar = this.addStatusBarItem();
+			this.sessionStatusBar.setText('Convergent');
+			this.mspCommands.setStatusBarItem(this.sessionStatusBar);
+		}
+
+		// Recurring issues check on load and every hour
+		if (this.settings.enableRecurringIssues) {
+			this.recurringIssues.checkAndCreate();
+			this.registerInterval(
+				window.setInterval(
+					() => this.recurringIssues.checkAndCreate(),
+					RecurringIssues.checkIntervalMs
+				)
+			);
+		}
 
 		console.log('Convergent plugin loaded successfully');
 	}
 
 	async onunload() {
 		console.log('Unloading Convergent plugin');
+		this.progressTracking.destroy();
+		this.statusAutomation.destroy();
 	}
 
 	async loadSettings() {
@@ -82,14 +129,12 @@ export default class ConvergentPlugin extends Plugin {
 	}
 
 	registerCommands() {
-		// Register issue commands (create, update, delete, etc.)
 		this.issueCommands.registerCommands();
-
-		// Register switcher commands (quick switcher)
 		this.switcherCommands.registerCommands();
-
-		// Register relationship commands (parent/child, blocking, related)
 		this.relationshipCommands.registerCommands();
+		this.projectCommands.registerCommands();
+		this.mspCommands.registerCommands();
+		this.decisionBlockerCommands.registerCommands();
 
 		// Open Kanban view
 		this.addCommand({
@@ -105,12 +150,20 @@ export default class ConvergentPlugin extends Plugin {
 			callback: () => this.activateTableView()
 		});
 
-		// Start session (MSP)
+		// Open Timeline view
 		this.addCommand({
-			id: 'start-session',
-			name: 'Start session',
-			callback: () => {
-				new Notice('Session tracking - Coming in Week 7!');
+			id: 'open-timeline',
+			name: 'Open timeline',
+			callback: () => this.activateTimelineView()
+		});
+
+		// Recalculate all project progress
+		this.addCommand({
+			id: 'recalculate-progress',
+			name: 'Recalculate all project progress',
+			callback: async () => {
+				await this.progressTracking.recalculateAll();
+				new Notice('Project progress recalculated');
 			}
 		});
 
@@ -118,18 +171,20 @@ export default class ConvergentPlugin extends Plugin {
 	}
 
 	registerEventHandlers() {
-		// File creation handler
 		this.registerEvent(
-			this.app.vault.on('create', (file: TFile) => {
-				console.log('File created:', file.path);
-				// Will handle auto-tagging, template application, etc.
+			this.app.vault.on('modify', (file: TFile) => {
+				if (this.settings.enableProgressTracking) {
+					this.progressTracking.onFileModified(file);
+				}
+				if (this.settings.enableStatusAutomation) {
+					this.statusAutomation.onFileModified(file);
+				}
 			})
 		);
 
-		// File modification handler
 		this.registerEvent(
-			this.app.vault.on('modify', (file: TFile) => {
-				// Will handle status automation, progress tracking, etc.
+			this.app.vault.on('create', (file: TFile) => {
+				console.log('File created:', file.path);
 			})
 		);
 
@@ -138,49 +193,40 @@ export default class ConvergentPlugin extends Plugin {
 
 	async activateKanbanView() {
 		const { workspace } = this.app;
-
-		// Check if view is already open
 		let leaf = workspace.getLeavesOfType(KANBAN_VIEW_TYPE)[0];
-
 		if (!leaf) {
-			// Open in right sidebar
 			const rightLeaf = workspace.getRightLeaf(false);
 			if (rightLeaf) {
-				await rightLeaf.setViewState({
-					type: KANBAN_VIEW_TYPE,
-					active: true
-				});
+				await rightLeaf.setViewState({ type: KANBAN_VIEW_TYPE, active: true });
 				leaf = rightLeaf;
 			}
 		}
-
-		// Reveal the leaf
-		if (leaf) {
-			workspace.revealLeaf(leaf);
-		}
+		if (leaf) workspace.revealLeaf(leaf);
 	}
 
 	async activateTableView() {
 		const { workspace } = this.app;
-
-		// Check if view is already open
 		let leaf = workspace.getLeavesOfType(TABLE_VIEW_TYPE)[0];
-
 		if (!leaf) {
-			// Open in right sidebar
 			const rightLeaf = workspace.getRightLeaf(false);
 			if (rightLeaf) {
-				await rightLeaf.setViewState({
-					type: TABLE_VIEW_TYPE,
-					active: true
-				});
+				await rightLeaf.setViewState({ type: TABLE_VIEW_TYPE, active: true });
 				leaf = rightLeaf;
 			}
 		}
+		if (leaf) workspace.revealLeaf(leaf);
+	}
 
-		// Reveal the leaf
-		if (leaf) {
-			workspace.revealLeaf(leaf);
+	async activateTimelineView() {
+		const { workspace } = this.app;
+		let leaf = workspace.getLeavesOfType(TIMELINE_VIEW_TYPE)[0];
+		if (!leaf) {
+			const rightLeaf = workspace.getRightLeaf(false);
+			if (rightLeaf) {
+				await rightLeaf.setViewState({ type: TIMELINE_VIEW_TYPE, active: true });
+				leaf = rightLeaf;
+			}
 		}
+		if (leaf) workspace.revealLeaf(leaf);
 	}
 }

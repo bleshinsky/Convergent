@@ -53,9 +53,9 @@ export class IssueModal extends Modal {
 			.addDropdown(dropdown => {
 				dropdown
 					.addOption('Backlog', 'Backlog')
+					.addOption('Triage', 'Triage')
 					.addOption('Todo', 'Todo')
 					.addOption('In Progress', 'In Progress')
-					.addOption('In Review', 'In Review')
 					.addOption('Done', 'Done')
 					.addOption('Canceled', 'Canceled')
 					.setValue(this.status)
@@ -70,6 +70,7 @@ export class IssueModal extends Modal {
 			.setDesc('Issue priority')
 			.addDropdown(dropdown => {
 				dropdown
+					.addOption('No Priority', 'No Priority')
 					.addOption('Low', 'Low')
 					.addOption('Medium', 'Medium')
 					.addOption('High', 'High')

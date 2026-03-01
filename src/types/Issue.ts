@@ -77,6 +77,9 @@ export interface Issue {
 	session?: string; // Wikilink: "[[Session 2025-10-08]]"
 	decisions?: string[]; // Wikilinks to decisions
 
+	// Context export
+	memory?: boolean; // If true, always include in AI context export
+
 	// Runtime properties (not stored in frontmatter)
 	file?: TFile; // The Obsidian TFile object for this issue
 }
